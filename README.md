@@ -12,7 +12,7 @@ This is a [pairing cryptography](https://en.wikipedia.org/wiki/Pairing-based_cry
 
 *e: G<sub>1</sub> × G<sub>2</sub> → G<sub>T</sub>*
 
-This code is adaptation of (bn)[https://github.com/zcash-hackworks/bn.git] library.
+This code is adaptation of (bn)[https://github.com/zcash-hackworks/bn] library.
 
 ## Security warnings
 
