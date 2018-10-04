@@ -15,7 +15,7 @@ type
   BNU256* = array[4, uint64]
   BNU512* = array[8, uint64]
 
-proc setRandom*(a: var BNU512) {.inline, noinit.} =
+proc setRandom*(a: var BNU512) {.inline.} =
   ## Set value of integer ``a`` to random value.
   let ret = randomBytes(a)
   doAssert(ret == 8)
@@ -24,23 +24,23 @@ proc random*(t: typedesc[BNU512]): BNU512 {.inline, noinit.} =
   ## Return random 512bit integer.
   setRandom(result)
 
-proc setZero*(a: var BNU256) {.inline, noinit.} =
+proc setZero*(a: var BNU256) {.inline.} =
   ## Set value of integer ``a`` to zero.
   a[0] = 0'u64
   a[1] = 0'u64
   a[2] = 0'u64
   a[3] = 0'u64
 
-proc setOne*(a: var BNU256) {.inline, noinit.} =
+proc setOne*(a: var BNU256) {.inline.} =
   ## Set value of integer ``a`` to one.
   a[0] = 1'u64
   a[1] = 0'u64
   a[2] = 0'u64
   a[3] = 0'u64
 
-proc zero*(t: typedesc[BNU256]): BNU256 {.inline, noinit.} =
+proc zero*(t: typedesc[BNU256]): BNU256 {.inline.} =
   ## Return zero 256bit integer.
-  setZero(result)
+  discard
 
 proc one*(t: typedesc[BNU256]): BNU256 {.inline, noinit.} =
   ## Return one 256bit integer.
@@ -56,11 +56,9 @@ proc setBit*(a: var openarray[uint64], n: int,
   if n >= 256:
     return
   let part = n shr 6
-  let bit = n - (part shl 6)
-  if to:
-    a[part] = a[part] or (1'u64 shl bit)
-  else:
-    a[part] = a[part] and not(1'u64 shl bit)
+  let index = n and 63
+  let value = uint64(to)
+  a[part] = a[part] and not(1'u64 shl index) or (value shl index)
   result = true
 
 proc getBit*(a: openarray[uint64], n: int): bool {.inline, noinit.} =
@@ -78,7 +76,7 @@ template combineU64(hi, lo: untyped): uint64 =
   ## Combine 64bit unsigned integer from 32bit parts
   (hi shl 32) or lo
 
-proc div2*(a: var BNU256) {.inline, noinit.} =
+proc div2*(a: var BNU256) {.inline.} =
   ## Divide integer ``a`` in place by ``2``.
   var t = a[3] shl 63
   a[3] = a[3] shr 1
@@ -91,7 +89,7 @@ proc div2*(a: var BNU256) {.inline, noinit.} =
   a[0] = a[0] shr 1
   a[0] = a[0] or t
 
-proc mul2*(a: var BNU256) {.inline, noinit.} =
+proc mul2*(a: var BNU256) {.inline.} =
   ## Multiply integer ``a`` in place by ``2``.
   var last = 0'u64
   for i in a.mitems():
@@ -113,7 +111,7 @@ proc adc(a, b: uint64, carry: var uint64): uint64 {.inline, noinit.} =
   carry = c
   result = combineU64(r1, r0)
 
-proc addNoCarry*(a: var BNU256, b: BNU256) {.inline, noinit.} =
+proc addNoCarry*(a: var BNU256, b: BNU256) {.inline.} =
   ## Calculate integer addition ``a = a + b``.
   var carry = 0'u64
   a[0] = adc(a[0], b[0], carry)
@@ -122,7 +120,7 @@ proc addNoCarry*(a: var BNU256, b: BNU256) {.inline, noinit.} =
   a[3] = adc(a[3], b[3], carry)
   assert(carry == 0)
 
-proc subNoBorrow*(a: var BNU256, b: BNU256) {.inline, noinit.} =
+proc subNoBorrow*(a: var BNU256, b: BNU256) {.inline.} =
   ## Calculate integer substraction ``a = a - b``.
   proc sbb(a: uint64, b: uint64,
            borrow: var uint64): uint64 {.inline, noinit.}=
@@ -143,7 +141,7 @@ proc subNoBorrow*(a: var BNU256, b: BNU256) {.inline, noinit.} =
   assert(borrow == 0)
 
 proc macDigit(acc: var openarray[uint64], pos: int, b: openarray[uint64],
-              c: uint64) {.noinit.} =
+              c: uint64) =
   proc macWithCarry(a, b, c: uint64, carry: var uint64): uint64 {.noinit.} =
     var
       bhi, blo, chi, clo, ahi, alo, carryhi, carrylo: uint64
@@ -172,11 +170,9 @@ proc macDigit(acc: var openarray[uint64], pos: int, b: openarray[uint64],
   assert(carry == 0)
 
 proc mulReduce(a: var BNU256, by: BNU256, modulus: BNU256,
-               inv: uint64) {.noinit.} =
+               inv: uint64) =
   var res: array[4 * 2, uint64]
   var k: uint64
-  for i in 0..<8:
-    res[i] = 0'u64
   macDigit(res, 0, by, a[0])
   macDigit(res, 1, by, a[1])
   macDigit(res, 2, by, a[2])
@@ -212,20 +208,20 @@ proc `==`*(a: BNU256, b: BNU256): bool {.noinit, inline.} =
   result = (compare(a, b) == 0)
 
 proc mul*(a: var BNU256, b: BNU256, modulo: BNU256,
-          inv: uint64) {.inline, noinit.} =
+          inv: uint64) {.inline.} =
   ## Multiply integer ``a`` by ``b`` (mod ``modulo``) via the Montgomery
   ## multiplication method.
   mulReduce(a, b, modulo, inv)
   if a >= modulo:
     subNoBorrow(a, modulo)
 
-proc add*(a: var BNU256, b: BNU256, modulo: BNU256) {.inline, noinit.} =
+proc add*(a: var BNU256, b: BNU256, modulo: BNU256) {.inline.} =
   ## Add integer ``b`` from integer ``a`` (mod ``modulo``).
   addNoCarry(a, b)
   if a >= modulo:
     subNoBorrow(a, modulo)
 
-proc sub*(a: var BNU256, b: BNU256, modulo: BNU256) {.inline, noinit.} =
+proc sub*(a: var BNU256, b: BNU256, modulo: BNU256) {.inline.} =
   ## Subtract integer ``b`` from integer ``a`` (mod ``modulo``).
   if a < b:
     addNoCarry(a, modulo)
@@ -295,7 +291,7 @@ proc fromBytes*(dst: var BNU256, src: openarray[byte]): bool =
   bigEndian64(addr dst[3], addr buffer[0 * sizeof(uint64)])
   result = true
 
-proc fromBytes*(dst: var BNU512, src: openarray[byte]): bool {.noinit.} =
+proc fromBytes*(dst: var BNU512, src: openarray[byte]): bool =
   ## Create 512bit integer form big-endian bytes representation ``src``.
   ## Returns ``true`` if ``dst`` was successfully initialized, ``false``
   ## otherwise.
