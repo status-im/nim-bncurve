@@ -9,6 +9,8 @@
 import options
 import fp, arith
 
+{.deadCodeElim: on.}
+
 type
   FQ2* = object
     c0*: FQ

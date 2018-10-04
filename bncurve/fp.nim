@@ -8,6 +8,8 @@
 # those terms.
 import arith, options
 
+{.deadCodeElim: on.}
+
 template fieldImplementation(finame, fimodulus, firsquared, fircubed,
                              fionep, fiinv: untyped): untyped {.dirty.} =
   type finame* = distinct BNU256

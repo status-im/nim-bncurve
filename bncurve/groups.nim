@@ -10,6 +10,8 @@ import fields, arith, options
 export fields, arith, options
 import nimcrypto/utils
 
+{.deadCodeElim: on.}
+
 type
   G1* = object
   G2* = object
@@ -25,12 +27,6 @@ type
       x*, y*: FQ
     else:
       x*, y*: FQ2
-
-  Coeff*[T: G1|G2] = object
-    when T is G1:
-      b*: FQ
-    else:
-      b*: FQ2
 
   EllCoeffs* = object
     ell_0*: FQ2
@@ -124,11 +120,11 @@ proc name*[T: G1|G2](t: typedesc[T]): string {.inline, noinit.} =
   else:
     result = "G2"
 
-proc coeff*[T: G1|G2](t: typedesc[T]): Coeff[T] {.inline, noinit.} =
-  when T is G1:
-    result = G1B
-  else:
-    result = G2B
+proc coeff*(t: typedesc[G1]): FQ {.inline, noinit.} =
+  result = G1B
+
+proc coeff*(t: typedesc[G2]): FQ2 {.inline, noinit.} =
+  result = G2B
 
 proc zero*[T: G1|G2](t: typedesc[T]): Point[T] {.inline, noinit.} =
   when T is G1:
@@ -376,6 +372,26 @@ proc pairing*(p: Point[G1], q: Point[G2]): FQ12 {.noinit, inline.} =
     let ores = finalExponentiation(pc.millerLoop(optp.get()))
     if ores.isSome():
       result = ores.get()
+
+proc init*(p: var AffinePoint[G1], x: FQ, y: FQ): bool {.inline.} =
+  ## Initializes AffinePoint[G1] with coordinates ``x`` and ``y``.
+  ## Returns ``true`` if (x, y) is on curve and in the subgroup.
+  if y.squared() == (x.squared() * x) + G1B:
+    var point = Point[G1](x: x, y: y, z: FQ.one())
+    if (point * (-FR.one())) + point == G1.zero():
+      p.x = x
+      p.y = y
+      result = true
+
+proc init*(p: var AffinePoint[G2], x: FQ2, y: FQ2): bool {.inline.} =
+  ## Initializes AffinePoint[G2] with coordinates ``x`` and ``y``.
+  ## Returns ``true`` if (x, y) is on curve and in the subgroup.
+  if y.squared() == (x.squared() * x) + G2B:
+    var point = Point[G2](x: x, y: y, z: FQ2.one())
+    if (point * (-FR.one())) + point == G2.zero():
+      p.x = x
+      p.y = y
+      result = true
 
 proc toBytes*[T: G1|G2](p: AffinePoint[T], dst: var openarray[byte]): bool =
   ## Encode affine point coordinates (x, y) to big-endian bytes representation

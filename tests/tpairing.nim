@@ -224,6 +224,44 @@ proc testJoux(): bool =
 
   result = (alice_ss == bob_ss and bob_ss == carol_ss)
 
+proc testPredefinedPair(): bool =
+  let fq2x = FQ2(
+    c0: FQ.fromString("10857046999023057135944570762232829481370756359578518086990519993285655852781"),
+    c1: FQ.fromString("11559732032986387107991004021392285783925812861821192530917403151452391805634")
+  )
+  let fq2y = FQ2(
+    c0: FQ.fromString("8495653923123431417604973247489272438418190587263600148770280649306958101930"),
+    c1: FQ.fromString("4082367875863433681332203403145435568316851327593401208105741076214120093531")
+  )
+  var g1a: AffinePoint[G1]
+  var g2a: AffinePoint[G2]
+  if g1a.init(FQ.fromString("1"), FQ.fromString("2")):
+    var g1 = g1a.toJacobian()
+    if g2a.init(fq2x, fq2y):
+      var g2 = g2a.toJacobian()
+      let p = pairing(g1, g2)
+      if not p.isZero():
+        result = true
+
+proc testInternals(): bool =
+  let p = G1.one()
+  let val = p
+  let affineOpt = val.toAffine()
+  if isSome(affineOpt):
+    let affine = affineOpt.get()
+    if affine.x == FQ.one():
+      result = true
+
+proc testAffineFail1(): bool =
+  var ap: AffinePoint[G1]
+  if not ap.init(FQ.one(), FQ.one()):
+    result = true
+
+proc testAffineFail2(): bool =
+  var ap: AffinePoint[G1]
+  if not ap.init(FQ.one(), G1.coeff()):
+    result = true
+
 when isMainModule:
   suite "Pairing test suite":
     test "Prepared G2 test":
@@ -238,3 +276,11 @@ when isMainModule:
       check testDH() == true
     test "Joux test":
       check testJoux() == true
+    test "[Paritytech] Predefined pair test":
+      check testPredefinedPair() == true
+    test "[Paritytech] Internals test":
+      check testInternals() == true
+    test "[Paritytech] Affine FAIL#1 test":
+      check testAffineFail1() == true
+    test "[Paritytech] Affine FAIL#2 test":
+      check testAffineFail2() == true

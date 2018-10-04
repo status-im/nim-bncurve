@@ -8,8 +8,9 @@
 # those terms.
 import options, endians
 import nimcrypto/[utils, sysrand]
-
 export options
+
+{.deadCodeElim: on.}
 
 type
   BNU256* = array[4, uint64]
