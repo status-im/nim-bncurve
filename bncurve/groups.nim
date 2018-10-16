@@ -376,8 +376,8 @@ proc pairing*(p: Point[G1], q: Point[G2]): FQ12 {.noinit, inline.} =
 proc init*(p: var AffinePoint[G1], x: FQ, y: FQ): bool {.inline.} =
   ## Initializes AffinePoint[G1] with coordinates ``x`` and ``y``.
   ## Returns ``true`` if (x, y) is on curve and in the subgroup.
-  if y.squared() == (x.squared() * x) + G1B:
-    var point = Point[G1](x: x, y: y, z: FQ.one())
+  if y.squared() == ((x.squared() * x) + G1B):
+    let point = Point[G1](x: x, y: y, z: FQ.one())
     if (point * (-FR.one())) + point == G1.zero():
       p.x = x
       p.y = y
@@ -386,8 +386,8 @@ proc init*(p: var AffinePoint[G1], x: FQ, y: FQ): bool {.inline.} =
 proc init*(p: var AffinePoint[G2], x: FQ2, y: FQ2): bool {.inline.} =
   ## Initializes AffinePoint[G2] with coordinates ``x`` and ``y``.
   ## Returns ``true`` if (x, y) is on curve and in the subgroup.
-  if y.squared() == (x.squared() * x) + G2B:
-    var point = Point[G2](x: x, y: y, z: FQ2.one())
+  if y.squared() == ((x.squared() * x) + G2B):
+    let point = Point[G2](x: x, y: y, z: FQ2.one())
     if (point * (-FR.one())) + point == G2.zero():
       p.x = x
       p.y = y

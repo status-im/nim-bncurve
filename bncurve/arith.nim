@@ -242,7 +242,7 @@ proc isEven*(a: BNU256): bool {.inline, noinit.} =
 proc divrem*(a: BNU512, modulo: BNU256, reminder: var BNU256): Option[BNU256] =
   ## Divides integer ``a`` by ``modulo``, set ``remainder`` to reminder and, if
   ## possible, return quotient smaller than the modulus.
-  var q: BNU256
+  var q = BNU256.zero()
   reminder.setZero()
   result = some[BNU256](q)
   for i in countdown(511, 0):

@@ -95,12 +95,12 @@ template fieldImplementation(finame, fimodulus, firsquared, fircubed,
       result += numis[idx]
 
   proc into*(t: typedesc[BNU256], num: finame): BNU256 =
-    ## Convert Fp ``num`` to 256bit integer.
+    ## Convert FR/FQ ``num`` to 256bit integer.
     result = BNU256(num)
     mul(result, BNU256.one(), BNU256(fimodulus), fiinv)
 
   proc init*(t: typedesc[finame], num: BNU256): Option[finame] =
-    ## Initialize Fp from 256bit integer ``num``.
+    ## Initialize FR/FQ from 256bit integer ``num``.
     if num >= BNU256(fimodulus):
       result = none[finame]()
     else:
@@ -109,8 +109,13 @@ template fieldImplementation(finame, fimodulus, firsquared, fircubed,
       mul(BNU256(res), BNU256(firsquared), BNU256(fimodulus), fiinv)
       result = some[finame](res)
 
+  proc init2*(t: typedesc[finame], num: BNU256): finame =
+    ## Initalize FR/FQ from 256bit integer ``num`` regardless of modulus.
+    result = finame(num)
+    mul(BNU256(result), BNU256(firsquared), BNU256(fimodulus), fiinv)
+
   proc fromBytes*(dst: var finame, src: openarray[byte]): bool {.noinit.} =
-    ## Create integer FP/FQ from big-endian bytes representation ``src``.
+    ## Create integer FR/FQ from big-endian bytes representation ``src``.
     ## Returns ``true`` if ``dst`` was successfully initialized, ``false``
     ## otherwise.
     result = false
@@ -120,6 +125,17 @@ template fieldImplementation(finame, fimodulus, firsquared, fircubed,
       if isSome(optr):
         dst = optr.get()
         result = true
+
+  proc fromBytes2*(dst: var finame, src: openarray[byte]): bool {.noinit.} =
+    ## Create integer FR/FQ from big-endian bytes representation ``src`` in
+    ## Ethereum way (without modulo check).
+    ## Returns ``true`` if ``dst`` was successfully initialized, ``false``
+    ## otherwise.
+    result = false
+    var bn: BNU256
+    if bn.fromBytes(src):
+      dst = finame.init2(bn)
+      result = true
 
   proc toBytes*(src: finame,
                 dst: var openarray[byte]): bool {.noinit, inline.} =

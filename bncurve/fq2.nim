@@ -140,6 +140,16 @@ proc fromBytes*(dst: var FQ2, src: openarray[byte]): bool {.noinit.} =
         dst = init(c0o.get(), c1o.get())
         result = true
 
+proc fromBytes2*(dst: var FQ2, src: openarray[byte]): bool {.noinit.} =
+  ## Create integer FQ2 from big-endian bytes representation ``src`` in
+  ## Ethereum way.
+  ## Returns ``true`` if ``dst`` was successfully initialized, ``false``
+  ## otherwise.
+  result = false
+  if dst.c1.fromBytes2(src.toOpenArray(0, 31)) and
+     dst.c0.fromBytes2(src.toOpenArray(32, 63)):
+    result = true
+
 proc toBytes*(src: FQ2,
               dst: var openarray[byte]): bool {.noinit, inline.} =
   ## Encode 512bit integer FQ2 to big-endian bytes representation ``dst``.
