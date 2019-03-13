@@ -89,7 +89,7 @@ template fieldImplementation(finame, fimodulus, firsquared, fircubed,
       acc += finame.one()
     result.setZero()
     for ch in number:
-      assert(ch in {'0'..'9'})
+      doAssert(ch in {'0'..'9'})
       let idx = ord(ch) - ord('0')
       result *= numis[10]
       result += numis[idx]

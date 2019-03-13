@@ -119,7 +119,7 @@ proc addNoCarry*(a: var BNU256, b: BNU256) {.inline.} =
   a[1] = adc(a[1], b[1], carry)
   a[2] = adc(a[2], b[2], carry)
   a[3] = adc(a[3], b[3], carry)
-  assert(carry == 0)
+  doAssert(carry == 0)
 
 proc subNoBorrow*(a: var BNU256, b: BNU256) {.inline.} =
   ## Calculate integer substraction ``a = a - b``.
@@ -139,7 +139,7 @@ proc subNoBorrow*(a: var BNU256, b: BNU256) {.inline.} =
   a[1] = sbb(a[1], b[1], borrow)
   a[2] = sbb(a[2], b[2], borrow)
   a[3] = sbb(a[3], b[3], borrow)
-  assert(borrow == 0)
+  doAssert(borrow == 0)
 
 proc macDigit(acc: var openarray[uint64], pos: int, b: openarray[uint64],
               c: uint64) =
@@ -168,7 +168,7 @@ proc macDigit(acc: var openarray[uint64], pos: int, b: openarray[uint64],
       acc[i] = macWithCarry(acc[i], 0'u64, c, carry)
     else:
       break
-  assert(carry == 0)
+  doAssert(carry == 0)
 
 proc mulReduce(a: var BNU256, by: BNU256, modulus: BNU256,
                inv: uint64) =
@@ -248,7 +248,7 @@ proc divrem*(a: BNU512, modulo: BNU256, reminder: var BNU256): Option[BNU256] =
   for i in countdown(511, 0):
     mul2(reminder)
     let ret = reminder.setBit(0, a.getBit(i))
-    assert ret
+    doAssert ret
     if reminder >= modulo:
       subNoBorrow(reminder, modulo)
       if result.isSome():
@@ -275,7 +275,7 @@ proc into*(t: typedesc[BNU512], c1: BNU256,
       result[i] = adc(result[i], 0'u64, carry)
     else:
       break
-  assert(carry == 0'u64)
+  doAssert(carry == 0'u64)
 
 proc fromBytes*(dst: var BNU256, src: openarray[byte]): bool =
   ## Create 256bit integer from big-endian bytes representation ``src``.
