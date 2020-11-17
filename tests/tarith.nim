@@ -1,7 +1,9 @@
 import unittest
 import ../bncurve/arith
+import os
 
 when isMainModule:
+  let isNimPackageTest = existsEnv("NIM_TEST_PACKAGES")
   let modulo = [
     0x3c208c16d87cfd47'u64, 0x97816a916871ca8d'u64,
     0xb85045b68181585d'u64, 0x30644e72e131a029'u64
@@ -20,6 +22,7 @@ when isMainModule:
           c2.fromHexString(c0s) == true
           c0 == c1
           c0 == c2
+        if isNimPackageTest: break
 
     test "[512] Serialize/Deserialize tests":
       for i in 0..<100:
@@ -37,6 +40,7 @@ when isMainModule:
           isSome(c1opt) == true
           c1opt.get() == e1
           c0 == e0
+        if isNimPackageTest: break
 
     test "Setting bits":
       var moduloS = [
@@ -61,6 +65,7 @@ when isMainModule:
         check:
           nc1.get() == c1
           nc0 == c0
+        if isNimPackageTest: break
 
     test "Modulus should become 1*q + 0":
       var a = [
