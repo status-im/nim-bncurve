@@ -1,9 +1,8 @@
 ## BNCurve
-[![Build Status](https://travis-ci.org/status-im/nim-bncurve.svg?branch=master)](https://travis-ci.org/status-im/nim-bncurve)
-[![Build status](https://ci.appveyor.com/api/projects/status/hvv14l9v31mksam6/branch/master?svg=true)](https://ci.appveyor.com/project/nimbus/nim-bncurve/branch/master)
 [![License: Apache](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 ![Stability: experimental](https://img.shields.io/badge/stability-experimental-orange.svg)
+![Github action](https://github.com/status-im/nim-bncurve/workflows/CI/badge.svg)
 
 ## Introduction
 This pure Nim implementation of Barreto-Naehrig pairing-friendly elliptic curve.
