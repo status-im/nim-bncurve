@@ -178,7 +178,7 @@ when isMainModule:
         0x43e1f593f0000001'u64, 0x2833e84879b97091'u64,
         0xb85045b68181585d'u64, 0x30644e72e131a029'u64
       ]
-      var c0, c2: BNU256
+      var c0: BNU256
       var c1: Option[BNU256]
       c1 = a.divrem(moduloFr, c0)
       check:

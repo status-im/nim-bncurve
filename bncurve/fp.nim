@@ -114,7 +114,7 @@ template fieldImplementation(finame, fimodulus, firsquared, fircubed,
     result = finame(num)
     mul(BNU256(result), BNU256(firsquared), BNU256(fimodulus), fiinv)
 
-  proc fromBytes*(dst: var finame, src: openarray[byte]): bool {.noinit.} =
+  proc fromBytes*(dst: var finame, src: openArray[byte]): bool {.noinit.} =
     ## Create integer FR/FQ from big-endian bytes representation ``src``.
     ## Returns ``true`` if ``dst`` was successfully initialized, ``false``
     ## otherwise.
@@ -126,7 +126,7 @@ template fieldImplementation(finame, fimodulus, firsquared, fircubed,
         dst = optr.get()
         result = true
 
-  proc fromBytes2*(dst: var finame, src: openarray[byte]): bool {.noinit.} =
+  proc fromBytes2*(dst: var finame, src: openArray[byte]): bool {.noinit.} =
     ## Create integer FR/FQ from big-endian bytes representation ``src`` in
     ## Ethereum way (without modulo check).
     ## Returns ``true`` if ``dst`` was successfully initialized, ``false``
@@ -138,7 +138,7 @@ template fieldImplementation(finame, fimodulus, firsquared, fircubed,
       result = true
 
   proc toBytes*(src: finame,
-                dst: var openarray[byte]): bool {.noinit, inline.} =
+                dst: var openArray[byte]): bool {.noinit, inline.} =
     ## Encode integer FP/FQ to big-endian bytes representation ``dst``.
     ## Returns ``true`` if integer was successfully serialized, ``false``
     ## otherwise.

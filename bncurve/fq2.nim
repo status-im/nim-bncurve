@@ -124,7 +124,7 @@ proc `==`*(x: FQ2, y: FQ2): bool =
 proc mulByNonresidue*(x: FQ2): FQ2 =
   result = x * FQ2NonResidue
 
-proc fromBytes*(dst: var FQ2, src: openarray[byte]): bool {.noinit.} =
+proc fromBytes*(dst: var FQ2, src: openArray[byte]): bool {.noinit.} =
   ## Create 512bit integer FQ2 from big-endian bytes representation ``src``.
   ## Returns ``true`` if ``dst`` was successfully initialized, ``false``
   ## otherwise.
@@ -140,7 +140,7 @@ proc fromBytes*(dst: var FQ2, src: openarray[byte]): bool {.noinit.} =
         dst = init(c0o.get(), c1o.get())
         result = true
 
-proc fromBytes2*(dst: var FQ2, src: openarray[byte]): bool {.noinit.} =
+proc fromBytes2*(dst: var FQ2, src: openArray[byte]): bool {.noinit.} =
   ## Create integer FQ2 from big-endian bytes representation ``src`` in
   ## Ethereum way.
   ## Returns ``true`` if ``dst`` was successfully initialized, ``false``
@@ -151,7 +151,7 @@ proc fromBytes2*(dst: var FQ2, src: openarray[byte]): bool {.noinit.} =
     result = true
 
 proc toBytes*(src: FQ2,
-              dst: var openarray[byte]): bool {.noinit, inline.} =
+              dst: var openArray[byte]): bool {.noinit, inline.} =
   ## Encode 512bit integer FQ2 to big-endian bytes representation ``dst``.
   ## Returns ``true`` if integer was successfully serialized, ``false``
   ## otherwise.

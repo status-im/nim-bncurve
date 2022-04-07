@@ -393,7 +393,7 @@ proc init*(p: var AffinePoint[G2], x: FQ2, y: FQ2): bool {.inline.} =
       p.y = y
       result = true
 
-proc toBytes*[T: G1|G2](p: AffinePoint[T], dst: var openarray[byte]): bool =
+proc toBytes*[T: G1|G2](p: AffinePoint[T], dst: var openArray[byte]): bool =
   ## Encode affine point coordinates (x, y) to big-endian bytes representation
   ## ``dst``.
   ## Returns ``true`` if coordinates was successfully serialized, ``false``
@@ -409,7 +409,7 @@ proc toBytes*[T: G1|G2](p: AffinePoint[T], dst: var openarray[byte]): bool =
         if p.y.toBytes(toOpenArray(dst, 64, 127)):
           result = true
 
-proc fromBytes*[T: G1|G2](p: var AffinePoint[T], src: openarray[byte]): bool =
+proc fromBytes*[T: G1|G2](p: var AffinePoint[T], src: openArray[byte]): bool =
   ## Decode affine point coordinates (x, y) from big endian bytes representation
   ## ``src``.
   ## Returns ``true`` if coordinates was successfully serialized, ``false``
@@ -469,7 +469,7 @@ proc toHexString*[T: G1|G2](p: AffinePoint[T],
     result = toHex(buffer, lowercase)
 
 proc toBytes*[T: G1|G2](p: Point[T],
-                        dst: var openarray[byte]): bool {.inline.} =
+                        dst: var openArray[byte]): bool {.inline.} =
   ## Encode point coordinates (x, y, z) to big-endian bytes representation
   ## ``dst``.
   ## Returns ``true`` if coordinates was successfully serialized, ``false``
@@ -492,7 +492,7 @@ proc toBytes*[T: G1|G2](p: Point[T],
         result = apo.get().toBytes(toOpenArray(dst, 1, outputSize))
 
 proc fromBytes*[T: G1|G2](p: var Point[T],
-                          src: openarray[byte]): bool {.inline.} =
+                          src: openArray[byte]): bool {.inline.} =
   ## Decode affine point coordinates (x, y, z) from big endian bytes
   ## representation ``src``.
   ## Returns ``true`` if coordinates was successfully serialized, ``false``

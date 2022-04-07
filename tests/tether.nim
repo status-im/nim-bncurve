@@ -5,7 +5,7 @@ import nimcrypto/utils
 type
   ValidationError = object of Exception
 
-proc getPoint[T: G1|G2](t: typedesc[T], data: openarray[byte]): Point[T] =
+proc getPoint[T: G1|G2](t: typedesc[T], data: openArray[byte]): Point[T] =
   when T is G1:
     const nextOffset = 32
     var px, py: FQ
@@ -24,11 +24,11 @@ proc getPoint[T: G1|G2](t: typedesc[T], data: openarray[byte]): Point[T] =
       raise newException(ValidationError, "Point is not on curve")
     result = ap.toJacobian()
 
-proc getFR(data: openarray[byte]): FR =
+proc getFR(data: openArray[byte]): FR =
   if not result.fromBytes2(data):
     raise newException(ValidationError, "Could not get FR value")
 
-proc bn256ecAdd*(data: openarray[byte]): array[64, byte] =
+proc bn256ecAdd*(data: openArray[byte]): array[64, byte] =
   var input: array[128, byte]
   # Padding data
   let msglen = len(data)
@@ -43,7 +43,7 @@ proc bn256ecAdd*(data: openarray[byte]): array[64, byte] =
     # we can discard here because we supply proper buffer
     discard p.toBytes(result)
 
-proc bn256ecMul*(data: openarray[byte]): array[64, byte] =
+proc bn256ecMul*(data: openArray[byte]): array[64, byte] =
   var input: array[96, byte]
 
   # Padding data
@@ -60,7 +60,7 @@ proc bn256ecMul*(data: openarray[byte]): array[64, byte] =
     # we can discard here because we supply buffer of proper size
     discard p.toBytes(result)
 
-proc bn256ecPairing*(data: openarray[byte]): array[32, byte] =
+proc bn256ecPairing*(data: openArray[byte]): array[32, byte] =
   let msglen = len(data)
   if msglen mod 192 != 0:
     raise newException(ValidationError, "Invalid input length")

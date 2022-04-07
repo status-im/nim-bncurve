@@ -51,7 +51,7 @@ proc isZero*(a: BNU256): bool {.inline, noinit.} =
   ## Check if integer ``a`` is zero.
   (a[0] == 0'u64) and (a[1] == 0'u64) and (a[2] == 0'u64) and (a[3] == 0'u64)
 
-proc setBit*(a: var openarray[uint64], n: int,
+proc setBit*(a: var openArray[uint64], n: int,
              to: bool): bool {.inline, noinit.} =
   ## Set bit of integer ``a`` at position ``n`` to value ``to``.
   if n >= 256:
@@ -62,7 +62,7 @@ proc setBit*(a: var openarray[uint64], n: int,
   a[part] = a[part] and not(1'u64 shl index) or (value shl index)
   result = true
 
-proc getBit*(a: openarray[uint64], n: int): bool {.inline, noinit.} =
+proc getBit*(a: openArray[uint64], n: int): bool {.inline, noinit.} =
   ## Get value of bit at position ``n`` in integer ``a``.
   let part = n shr 6
   let bit = n - (part shl 6)
@@ -141,7 +141,7 @@ proc subNoBorrow*(a: var BNU256, b: BNU256) {.inline.} =
   a[3] = sbb(a[3], b[3], borrow)
   doAssert(borrow == 0)
 
-proc macDigit(acc: var openarray[uint64], pos: int, b: openarray[uint64],
+proc macDigit(acc: var openArray[uint64], pos: int, b: openArray[uint64],
               c: uint64) =
   proc macWithCarry(a, b, c: uint64, carry: var uint64): uint64 {.noinit.} =
     var
@@ -154,7 +154,7 @@ proc macDigit(acc: var openarray[uint64], pos: int, b: openarray[uint64],
     splitU64(blo * clo + alo + carrylo, xhi, xlo)
     splitU64(blo * chi, yhi, ylo)
     splitU64(bhi * clo, zhi, zlo)
-    splitU64(x_hi + y_lo + z_lo + a_hi + carry_hi, rhi, rlo)
+    splitU64(xhi + ylo + zlo + ahi + carryhi, rhi, rlo)
     carry = (bhi * chi) + rhi + yhi + zhi
     result = combineU64(rlo, xlo)
 
@@ -277,7 +277,7 @@ proc into*(t: typedesc[BNU512], c1: BNU256,
       break
   doAssert(carry == 0'u64)
 
-proc fromBytes*(dst: var BNU256, src: openarray[byte]): bool =
+proc fromBytes*(dst: var BNU256, src: openArray[byte]): bool =
   ## Create 256bit integer from big-endian bytes representation ``src``.
   ## Returns ``true`` if ``dst`` was successfully initialized, ``false``
   ## otherwise.
@@ -292,7 +292,7 @@ proc fromBytes*(dst: var BNU256, src: openarray[byte]): bool =
   bigEndian64(addr dst[3], addr buffer[0 * sizeof(uint64)])
   result = true
 
-proc fromBytes*(dst: var BNU512, src: openarray[byte]): bool =
+proc fromBytes*(dst: var BNU512, src: openArray[byte]): bool =
   ## Create 512bit integer form big-endian bytes representation ``src``.
   ## Returns ``true`` if ``dst`` was successfully initialized, ``false``
   ## otherwise.
@@ -318,7 +318,7 @@ proc fromHexString*(dst: var BNU256, src: string): bool {.inline, noinit.} =
   ## otherwise.
   result = dst.fromBytes(fromHex(src))
 
-proc toBytes*(src: BNU256, dst: var openarray[byte]): bool {.noinit.} =
+proc toBytes*(src: BNU256, dst: var openArray[byte]): bool {.noinit.} =
   ## Convert 256bit integer ``src`` to big-endian bytes representation.
   ## Return ``true`` if ``dst`` was successfully set, ``false`` otherwise.
   if len(dst) < 4 * sizeof(uint64):
@@ -329,7 +329,7 @@ proc toBytes*(src: BNU256, dst: var openarray[byte]): bool {.noinit.} =
   bigEndian64(addr dst[3 * sizeof(uint64)], unsafeAddr src[0])
   result = true
 
-proc toBytes*(src: BNU512, dst: var openarray[byte]): bool {.noinit.} =
+proc toBytes*(src: BNU512, dst: var openArray[byte]): bool {.noinit.} =
   ## Convert 512bit integer ``src`` to big-endian bytes representation.
   ## Return ``true`` if ``dst`` was successfully set, ``false`` otherwise.
   if len(dst) < 8 * sizeof(uint64):
