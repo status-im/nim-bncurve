@@ -1,6 +1,6 @@
 import unittest
 import nimcrypto/utils
-import ../bncurve/fields
+import ../bncurve/[fields, random_generation]
 
 proc randomSquaring*[T](): bool =
   for i in 0..100:
