@@ -6,24 +6,12 @@
 # at your option.
 # This file may not be copied, modified, or distributed except according to
 # those terms.
-import options, endians
-import nimcrypto/[utils, sysrand]
-export options
+import options, endians, types
+import nimcrypto/utils
+export options, types
 
 {.deadCodeElim: on.}
 
-type
-  BNU256* = array[4, uint64]
-  BNU512* = array[8, uint64]
-
-proc setRandom*(a: var BNU512) {.inline.} =
-  ## Set value of integer ``a`` to random value.
-  let ret = randomBytes(a)
-  doAssert(ret == 8)
-
-proc random*(t: typedesc[BNU512]): BNU512 {.inline, noinit.} =
-  ## Return random 512bit integer.
-  setRandom(result)
 
 proc setZero*(a: var BNU256) {.inline.} =
   ## Set value of integer ``a`` to zero.
@@ -363,15 +351,6 @@ proc `$`*(src: BNU256): string =
 proc `$`*(src: BNU512): string =
   ## Return hexadecimal string representation of integer ``src``.
   result = toString(src, false)
-
-proc setRandom*(a: var BNU256, modulo: BNU256) {.noinit, inline.} =
-  ## Set value of integer ``a`` to random value (mod ``modulo``).
-  var r = BNU512.random()
-  discard divrem(r, modulo, a)
-
-proc random*(t: typedesc[BNU256], modulo: BNU256): BNU256 {.noinit, inline.} =
-  ## Return random 256bit integer (mod ``modulo``).
-  result.setRandom(modulo)
 
 proc invert*(a: var BNU256, modulo: BNU256) =
   ## Turn integer ``a`` into its multiplicative inverse (mod ``modulo``).

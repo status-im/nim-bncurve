@@ -6,13 +6,11 @@
 # at your option.
 # This file may not be copied, modified, or distributed except according to
 # those terms.
-import arith, options
-
+import options, arith,  types
 {.deadCodeElim: on.}
 
 template fieldImplementation(finame, fimodulus, firsquared, fircubed,
                              fionep, fiinv: untyped): untyped {.dirty.} =
-  type finame* = distinct BNU256
 
   proc setZero*(dst: var finame) {.noinit, inline.} =
     ## Set ``zero`` representation in Fp to ``dst``.
@@ -37,15 +35,6 @@ template fieldImplementation(finame, fimodulus, firsquared, fircubed,
   proc modulus*(t: typedesc[finame]): BNU256 {.noinit, inline} =
     ## Return ``Fp`` modulus.
     result = fimodulus
-
-  proc setRandom*(dst: var finame) {.noinit, inline.} =
-    ## Set ``dst`` to random value
-    var a = BNU256.random(fimodulus)
-    dst = finame(a)
-
-  proc random*(t: typedesc[finame]): finame {.noinit, inline.} =
-    ## Return random ``Fp``.
-    result.setRandom()
 
   proc `+`*(x, y: finame): finame {.noinit, inline.} =
     ## Return result of ``x + y``.

@@ -6,5 +6,5 @@
 # at your option.
 # This file may not be copied, modified, or distributed except according to
 # those terms.
-import options, arith, fp, fq2, fq6, fq12
-export options, arith, fp, fq2, fq6, fq12
+import options, arith, fp, fq2, fq6, fq12, types
+export options, arith, fp, fq2, fq6, fq12, types
