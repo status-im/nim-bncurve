@@ -19,5 +19,4 @@ task test, "Run all tests":
       "tests/tether",
       "tests/tvectors",
     ]:
-    exec "nim c -f -r -d:release --threads:on " & tprog
-
+    exec "nim c -f -r -d:release --styleCheck:error --styleCheck:usages --threads:on " & tprog
