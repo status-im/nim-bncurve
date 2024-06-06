@@ -7,7 +7,7 @@ skipDirs      = @["tests", "Nim", "nim"]
 
 ### Dependencies
 
-requires "nim > 0.18.0",
+requires "nim >= 1.6.0",
          "nimcrypto"
 
 task test, "Run all tests":

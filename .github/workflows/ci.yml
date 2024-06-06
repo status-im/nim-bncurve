@@ -22,19 +22,19 @@ jobs:
         include:
           - target:
               os: linux
-            builder: ubuntu-18.04
+            builder: ubuntu-latest
           - target:
               os: macos
-            builder: macos-10.15
+            builder: macos-latest
           - target:
               os: windows
-            builder: windows-2019
+            builder: windows-latest
 
     name: '${{ matrix.target.os }}-${{ matrix.target.cpu }}-${{ matrix.test_lang }}'
     runs-on: ${{ matrix.builder }}
     steps:
       - name: Checkout nim-bncurve
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: nim-bncurve
           submodules: false
