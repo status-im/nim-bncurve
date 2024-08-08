@@ -108,7 +108,7 @@ when sizeof(int) == 4:
   import stint/private/primitives/compiletime_fallback
 
   # TODO a future intops library should expose this on 32-bit platforms too!
-  proc muladd2(hi, lo: var uint64, a, b, c1, c2: uint64): uint64 =
+  proc muladd2(hi, lo: var uint64, a, b, c1, c2: uint64) =
     muladd2_nim(hi, lo, a, b, c1, c2)
 
 proc macDigit[N, N2: static int](
