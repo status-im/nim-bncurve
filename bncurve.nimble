@@ -8,7 +8,8 @@ skipDirs      = @["tests", "Nim", "nim"]
 ### Dependencies
 
 requires "nim >= 1.6.0",
-         "nimcrypto"
+         "nimcrypto",
+         "stint"
 
 task test, "Run all tests":
   for tprog in @[

@@ -10,7 +10,22 @@ import options, endians
 import nimcrypto/[utils, sysrand]
 export options
 
-{.deadCodeElim: on.}
+# TODO replace private stint operations with an integer primitive library
+import stint/private/datatypes
+
+when sizeof(int) == 4:
+  import stint/private/primitives/compiletime_fallback
+
+  # TODO a future intops library should expose this on 32-bit platforms too!
+  func addC*(cOut: var Carry, sum: var uint64, a, b: uint64, cIn: Carry) {.inline.} =
+    addC_nim(cOut, sum, a, b, cIn)
+  func subB*(bOut: var Borrow, diff: var uint64, a, b: uint64, bIn: Borrow) {.inline.} =
+    subB_nim(bOut, diff, a, b, bIn)
+  proc muladd2(hi, lo: var uint64, a, b, c1, c2: uint64) =
+    muladd2_nim(hi, lo, a, b, c1, c2)
+
+else:
+  import stint/private/primitives/[addcarry_subborrow, extended_precision]
 
 type
   BNU256* = array[4, uint64]
@@ -68,16 +83,7 @@ proc getBit*(a: openArray[uint64], n: int): bool {.inline, noinit.} =
   let bit = n - (part shl 6)
   result = ((a[part] and (1'u64 shl bit)) != 0)
 
-template splitU64(n: uint64, hi, lo: untyped) =
-  ## Split 64bit unsigned integer to 32bit parts
-  hi = n shr 32
-  lo = n and 0xFFFF_FFFF'u64
-
-template combineU64(hi, lo: untyped): uint64 =
-  ## Combine 64bit unsigned integer from 32bit parts
-  (hi shl 32) or lo
-
-proc div2*(a: var BNU256) {.inline.} =
+proc div2(a: var BNU256) {.inline.} =
   ## Divide integer ``a`` in place by ``2``.
   var t = a[3] shl 63
   a[3] = a[3] shr 1
@@ -90,7 +96,7 @@ proc div2*(a: var BNU256) {.inline.} =
   a[0] = a[0] shr 1
   a[0] = a[0] or t
 
-proc mul2*(a: var BNU256) {.inline.} =
+proc mul2(a: var BNU256) {.inline.} =
   ## Multiply integer ``a`` in place by ``2``.
   var last = 0'u64
   for i in a.mitems():
@@ -99,92 +105,42 @@ proc mul2*(a: var BNU256) {.inline.} =
     i = i or last
     last = tmp
 
-proc adc(a, b: uint64, carry: var uint64): uint64 {.inline, noinit.} =
-  ## Calculate ``a + b`` and return result, set ``carry`` to addition
-  ## operation carry.
-  var a0, a1, b0, b1, c, r0, r1: uint64
-  splitU64(a, a1, a0)
-  splitU64(b, b1, b0)
-  let tmp0 = a0 + b0 + carry
-  splitU64(tmp0, c, r0)
-  let tmp1 = a1 + b1 + c
-  splitU64(tmp1, c, r1)
-  carry = c
-  result = combineU64(r1, r0)
-
-proc addNoCarry*(a: var BNU256, b: BNU256) {.inline.} =
+proc addNoCarry(a: var BNU256, b: BNU256) {.inline.} =
   ## Calculate integer addition ``a = a + b``.
-  var carry = 0'u64
-  a[0] = adc(a[0], b[0], carry)
-  a[1] = adc(a[1], b[1], carry)
-  a[2] = adc(a[2], b[2], carry)
-  a[3] = adc(a[3], b[3], carry)
-  doAssert(carry == 0)
+  var carry: Carry
+  staticFor i, 0, 4:
+    addC(carry, a[i], a[i], b[i], carry)
 
-proc subNoBorrow*(a: var BNU256, b: BNU256) {.inline.} =
+proc subNoBorrow(a: var BNU256, b: BNU256) {.inline.} =
   ## Calculate integer substraction ``a = a - b``.
-  proc sbb(a: uint64, b: uint64,
-           borrow: var uint64): uint64 {.inline, noinit.}=
-    var a0, a1, b0, b1, t0, r0, r1: uint64
-    splitU64(a, a1, a0)
-    splitU64(b, b1, b0)
-    let tmp0 = (1'u64 shl 32) + a0 - b0 - borrow
-    splitU64(tmp0, t0, r0)
-    let tmp1 = (1'u64 shl 32) + a1 - b1 - uint64(t0 == 0'u64)
-    splitU64(tmp1, t0, r1)
-    borrow = uint64(t0 == 0)
-    result = combineU64(r1, r0)
-  var borrow = 0'u64
-  a[0] = sbb(a[0], b[0], borrow)
-  a[1] = sbb(a[1], b[1], borrow)
-  a[2] = sbb(a[2], b[2], borrow)
-  a[3] = sbb(a[3], b[3], borrow)
-  doAssert(borrow == 0)
+  var borrow: Borrow
+  staticFor i, 0, 4:
+    subB(borrow, a[i], a[i], b[i], borrow)
 
-proc macDigit(acc: var openArray[uint64], pos: int, b: openArray[uint64],
-              c: uint64) =
-  proc macWithCarry(a, b, c: uint64, carry: var uint64): uint64 {.noinit.} =
-    var
-      bhi, blo, chi, clo, ahi, alo, carryhi, carrylo: uint64
-      xhi, xlo, yhi, ylo, zhi, zlo, rhi, rlo: uint64
-    splitU64(b, bhi, blo)
-    splitU64(c, chi, clo)
-    splitU64(a, ahi, alo)
-    splitU64(carry, carryhi, carrylo)
-    splitU64(blo * clo + alo + carrylo, xhi, xlo)
-    splitU64(blo * chi, yhi, ylo)
-    splitU64(bhi * clo, zhi, zlo)
-    splitU64(xhi + ylo + zlo + ahi + carryhi, rhi, rlo)
-    carry = (bhi * chi) + rhi + yhi + zhi
-    result = combineU64(rlo, xlo)
-
+proc macDigit[N, N2: static int](
+    acc: var array[N, uint64], pos: static int, b: array[N2, uint64], c: uint64) =
   if c == 0'u64:
     return
-  var carry = 0'u64
-  for i in pos..<len(acc):
-    if (i - pos) < len(b):
-      acc[i] = macWithCarry(acc[i], b[i - pos], c, carry)
-    elif carry != 0:
-      acc[i] = macWithCarry(acc[i], 0'u64, c, carry)
-    else:
-      break
-  doAssert(carry == 0)
 
-proc mulReduce(a: var BNU256, by: BNU256, modulus: BNU256,
-               inv: uint64) =
+  var carry = 0'u64
+
+  staticFor i, pos, N:
+    when (i - pos) < len(b):
+      muladd2(carry, acc[i], b[i-pos], c, acc[i], carry)
+    else:
+      muladd2(carry, acc[i], 0, c, acc[i], carry)
+
+proc mulReduce(a: var BNU256, by: BNU256, modulus: BNU256, inv: uint64) =
   var res: array[4 * 2, uint64]
-  var k: uint64
-  macDigit(res, 0, by, a[0])
-  macDigit(res, 1, by, a[1])
-  macDigit(res, 2, by, a[2])
-  macDigit(res, 3, by, a[3])
-  for i in 0..<4:
-    k = inv * res[i]
+  staticFor i, 0, 4:
+    macDigit(res, i, by, a[i])
+
+  staticFor i, 0, 4:
+    let k = inv * res[i]
     macDigit(res, i, modulus, k)
-  a[0] = res[4]
-  a[1] = res[5]
-  a[2] = res[6]
-  a[3] = res[7]
+
+  staticFor i, 0, 4:
+    a[i] = res[i + 4]
 
 proc compare*(a: BNU256, b: BNU256): int {.noinit, inline.}=
   ## Compare integers ``a`` and ``b``.
@@ -267,15 +223,14 @@ proc into*(t: typedesc[BNU512], c1: BNU256,
   macDigit(result, 1, modulo, c1[1])
   macDigit(result, 2, modulo, c1[2])
   macDigit(result, 3, modulo, c1[3])
-  var carry = 0'u64
-  for i in 0..<len(result):
-    if len(c0) > i:
-      result[i] = adc(result[i], c0[i], carry)
-    elif carry != 0'u64:
-      result[i] = adc(result[i], 0'u64, carry)
+  var carry: Carry
+  staticFor i, 0, len(result):
+    when len(c0) > i:
+      addC(carry, result[i], result[i], c0[i], carry)
     else:
-      break
-  doAssert(carry == 0'u64)
+      addC(carry, result[i], result[i], 0'u64, carry)
+
+  doAssert(carry == 0)
 
 proc fromBytes*(dst: var BNU256, src: openArray[byte]): bool =
   ## Create 256bit integer from big-endian bytes representation ``src``.

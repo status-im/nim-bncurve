@@ -9,8 +9,6 @@
 import options
 import fq2, fp, arith
 
-{.deadCodeElim: on.}
-
 const frobeniusCoeffsC1: array[4, FQ2] = [
   FQ2.one(),
   FQ2(
