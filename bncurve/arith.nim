@@ -20,7 +20,7 @@ when sizeof(int) == 4:
   func addC*(cOut: var Carry, sum: var uint64, a, b: uint64, cIn: Carry) {.inline.} =
     addC_nim(cOut, sum, a, b, cIn)
   func subB*(bOut: var Borrow, diff: var uint64, a, b: uint64, bIn: Borrow) {.inline.} =
-    subB_nim(bOuit, diff, a, b, bIn)
+    subB_nim(bOut, diff, a, b, bIn)
   proc muladd2(hi, lo: var uint64, a, b, c1, c2: uint64) =
     muladd2_nim(hi, lo, a, b, c1, c2)
 
