@@ -104,6 +104,13 @@ proc subNoBorrow(a: var BNU256, b: BNU256) {.inline.} =
   staticFor i, 0, 4:
     subB(borrow, a[i], a[i], b[i], borrow)
 
+when sizeof(int) == 4:
+  import stint/private/primitives/compiletime_fallback
+
+  # TODO a future intops library should expose this on 32-bit platforms too!
+  proc muladd2(hi, lo: var uint64, a, b, c1, c2: uint64): uint64 =
+    muladd2_nim(hi, lo, a, b, c1, c2)
+
 proc macDigit[N, N2: static int](
     acc: var array[N, uint64], pos: static int, b: array[N2, uint64], c: uint64) =
   if c == 0'u64:
