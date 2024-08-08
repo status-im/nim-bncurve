@@ -11,7 +11,20 @@ import nimcrypto/[utils, sysrand]
 export options
 
 # TODO replace private stint operations with an integer primitive library
-import stint/private/primitives/[addcarry_subborrow, extended_precision]
+when sizeof(int) == 4:
+  import stint/private/primitives/compiletime_fallback
+
+  # TODO a future intops library should expose this on 32-bit platforms too!
+  func addC*(cOut: var Carry, sum: var uint64, a, b: uint64, cIn: Carry) {.inline.} =
+    addC_nim(cOut, sum, a, b, cIn)
+  func subB*(bOut: var Borrow, diff: var uint64, a, b: uint64, bIn: Borrow) {.inline.} =
+    subB_nim(bOuit, diff, a, b, bIn)
+  proc muladd2(hi, lo: var uint64, a, b, c1, c2: uint64) =
+    muladd2_nim(hi, lo, a, b, c1, c2)
+
+else:
+  import stint/private/primitives/[addcarry_subborrow, extended_precision]
+
 import stint/private/datatypes
 
 type
@@ -103,13 +116,6 @@ proc subNoBorrow(a: var BNU256, b: BNU256) {.inline.} =
   var borrow: Borrow
   staticFor i, 0, 4:
     subB(borrow, a[i], a[i], b[i], borrow)
-
-when sizeof(int) == 4:
-  import stint/private/primitives/compiletime_fallback
-
-  # TODO a future intops library should expose this on 32-bit platforms too!
-  proc muladd2(hi, lo: var uint64, a, b, c1, c2: uint64) =
-    muladd2_nim(hi, lo, a, b, c1, c2)
 
 proc macDigit[N, N2: static int](
     acc: var array[N, uint64], pos: static int, b: array[N2, uint64], c: uint64) =
