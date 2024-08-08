@@ -11,6 +11,8 @@ import nimcrypto/[utils, sysrand]
 export options
 
 # TODO replace private stint operations with an integer primitive library
+import stint/private/datatypes
+
 when sizeof(int) == 4:
   import stint/private/primitives/compiletime_fallback
 
@@ -24,8 +26,6 @@ when sizeof(int) == 4:
 
 else:
   import stint/private/primitives/[addcarry_subborrow, extended_precision]
-
-import stint/private/datatypes
 
 type
   BNU256* = array[4, uint64]
