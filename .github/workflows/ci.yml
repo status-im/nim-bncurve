@@ -1,5 +1,14 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+concurrency: # Cancel stale PR builds (but not push builds)
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -7,7 +16,6 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        test_lang: [c]
         target:
           - os: linux
             cpu: amd64
@@ -19,6 +27,7 @@ jobs:
             cpu: amd64
           - os: windows
             cpu: i386
+        branch: [version-1-6, version-2-0, version-2-2, devel]
         include:
           - target:
               os: linux
@@ -30,14 +39,13 @@ jobs:
               os: windows
             builder: windows-latest
 
-    name: '${{ matrix.target.os }}-${{ matrix.target.cpu }}-${{ matrix.test_lang }}'
+    name: '${{ matrix.target.os }}-${{ matrix.target.cpu }} (Nim ${{ matrix.branch }})'
     runs-on: ${{ matrix.builder }}
     steps:
-      - name: Checkout nim-bncurve
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          path: nim-bncurve
-          submodules: false
+          submodules: true
 
       - name: Install build dependencies (Linux i386)
         if: runner.os == 'Linux' && matrix.target.cpu == 'i386'
@@ -146,9 +154,12 @@ jobs:
           env MAKE="$MAKE_CMD -j2" ARCH_OVERRIDE=$PLATFORM CC=gcc bash build_nim.sh nim csources dist/nimble NimBinaries
           echo '${{ github.workspace }}/nim/bin' >> $GITHUB_PATH
 
-      - name: Run nim-bncurve tests
+      - name: Run tests
         shell: bash
         working-directory: nim-bncurve
         run: |
+          nim --version
+          nimble --version
+          gcc --version
           nimble install -y --depsOnly
-          env TEST_LANG="${{ matrix.test_lang }}" nimble test
+          nimble test
