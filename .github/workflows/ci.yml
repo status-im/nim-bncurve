@@ -32,12 +32,19 @@ jobs:
           - target:
               os: linux
             builder: ubuntu-latest
+            shell: bash
           - target:
               os: macos
             builder: macos-latest
+            shell: bash
           - target:
               os: windows
             builder: windows-latest
+            shell: msys2 {0}
+
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
 
     name: '${{ matrix.target.os }}-${{ matrix.target.cpu }} (Nim ${{ matrix.branch }})'
     runs-on: ${{ matrix.builder }}
@@ -78,7 +85,7 @@ jobs:
       - name: Restore Nim DLLs dependencies (Windows) from cache
         if: runner.os == 'Windows'
         id: windows-dlls-cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: external/dlls-${{ matrix.target.cpu }}
           key: 'dlls-${{ matrix.target.cpu }}'
@@ -106,7 +113,6 @@ jobs:
         if: >
           steps.windows-dlls-cache.outputs.cache-hit != 'true' &&
           runner.os == 'Windows'
-        shell: bash
         run: |
           mkdir -p external
           curl -L "https://nim-lang.org/download/windeps.zip" -o external/windeps.zip
@@ -115,14 +121,12 @@ jobs:
       - name: Path to cached dependencies (Windows)
         if: >
           runner.os == 'Windows'
-        shell: bash
         run: |
           echo '${{ github.workspace }}'"/external/mingw-${{ matrix.target.cpu }}/bin" >> $GITHUB_PATH
           echo '${{ github.workspace }}'"/external/dlls-${{ matrix.target.cpu }}" >> $GITHUB_PATH
 
       - name: Get latest nimbus-build-system commit hash
         id: versions
-        shell: bash
         run: |
           getHash() {
             git ls-remote "https://github.com/$1" "${2:-HEAD}" | cut -f 1
@@ -138,7 +142,6 @@ jobs:
           key: '${{ matrix.test_lang }}-${{ matrix.target.os }}-${{ matrix.target.cpu }}-${{ steps.versions.outputs.nimbus_build_system }}'
 
       - name: Build Nim and associated tools
-        shell: bash
         run: |
           curl -O -L -s -S https://raw.githubusercontent.com/status-im/nimbus-build-system/master/scripts/build_nim.sh
           if [[ '${{ matrix.target.cpu }}' == 'amd64' ]]; then
@@ -155,8 +158,6 @@ jobs:
           echo '${{ github.workspace }}/nim/bin' >> $GITHUB_PATH
 
       - name: Run tests
-        shell: bash
-        working-directory: nim-bncurve
         run: |
           nim --version
           nimble --version
