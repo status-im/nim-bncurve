@@ -120,114 +120,150 @@ proc subNoBorrow(a: var BNU256, b: BNU256) {.inline.} =
   staticFor i, 0, 4:
     subB(borrow, a[i], a[i], b[i], borrow)
 
-proc macDigit[N, N2: static int](
-    acc: var array[N, uint64], pos: static int, b: array[N2, uint64], c: uint64) =
+func macDigit[N, N2: static int](
+    acc: var array[N, uint64], pos: static int, b: array[N2, uint64], c: uint64
+) =
   if c == 0'u64:
     return
 
   var carry = 0'u64
 
-  staticFor i, pos, N:
+  staticFor i, pos ..< N:
     when (i - pos) < len(b):
-      muladd2(carry, acc[i], b[i-pos], c, acc[i], carry)
+      muladd2(carry, acc[i], b[i - pos], c, acc[i], carry)
     else:
       muladd2(carry, acc[i], 0, c, acc[i], carry)
 
-proc mulReduce(a: var BNU256, by: BNU256, modulus: BNU256, inv: uint64) =
-  var res: array[4 * 2, uint64]
-  staticFor i, 0, 4:
+func macDigit[N, N2: static int](
+    acc: var array[N, uint64], pos: static int, b: static array[N2, uint64], c: uint64
+) =
+  if c == 0'u64:
+    return
+
+  var carry = 0'u64
+
+  staticFor i, pos ..< N:
+    when (i - pos) < len(b):
+      muladd2(carry, acc[i], b[i - pos], c, acc[i], carry)
+    else:
+      muladd2(carry, acc[i], 0, c, acc[i], carry)
+
+func mulReduce(a: var BNU256, by: BNU256, modulo: static BNU256, inv: static uint64) =
+  var res {.align: 32.}: array[8, uint64]
+  staticFor i, 0 ..< 4:
     macDigit(res, i, by, a[i])
 
-  staticFor i, 0, 4:
+  staticFor i, 0 ..< 4:
     let k = inv * res[i]
-    macDigit(res, i, modulus, k)
+    macDigit(res, i, modulo, k)
 
-  staticFor i, 0, 4:
+  staticFor i, 0 ..< 4:
     a[i] = res[i + 4]
 
-proc compare*(a: BNU256, b: BNU256): int {.noinit, inline.}=
+func compare*(a: BNU256, b: BNU256): int =
   ## Compare integers ``a`` and ``b``.
   ## Returns ``-1`` if ``a < b``, ``1`` if ``a > b``, ``0`` if ``a == b``.
-  for i in countdown(3, 0):
+  staticFor j, 0 ..< 4:
+    const i = 3 - j
     if a[i] < b[i]:
       return -1
     elif a[i] > b[i]:
       return 1
   return 0
 
-proc `<`*(a: BNU256, b: BNU256): bool {.noinit, inline.} =
+func `<`*(a: BNU256, b: BNU256): bool =
   ## Return true if `a < b`.
-  result = (compare(a, b) == -1)
+  staticFor j, 0 ..< 4:
+    const i = 3 - j
+    if a[i] < b[i]:
+      return true
+    elif a[i] > b[i]:
+      return false
+  return false
 
-proc `<=`*(a: BNU256, b: BNU256): bool {.noinit, inline.} =
+func `<=`*(a: BNU256, b: BNU256): bool =
   ## Return true if `a <= b`.
-  result = (compare(a, b) <= 0)
+  staticFor j, 0 ..< 4:
+    const i = 3 - j
+    if a[i] < b[i]:
+      return true
+    elif a[i] > b[i]:
+      return false
+  return true
 
-proc `==`*(a: BNU256, b: BNU256): bool {.noinit, inline.} =
+func `==`*(a, b: BNU256): bool =
   ## Return true if `a == b`.
-  result = (compare(a, b) == 0)
+  var res = 0'u64
+  staticFor i, 0 ..< 4:
+    res = res or (a[i] xor b[i])
+  res == 0
 
-proc mul*(a: var BNU256, b: BNU256, modulo: BNU256,
-          inv: uint64) {.inline.} =
+func mul*(a: var BNU256, b: BNU256, modulo: static BNU256, inv: static uint64) =
   ## Multiply integer ``a`` by ``b`` (mod ``modulo``) via the Montgomery
   ## multiplication method.
   mulReduce(a, b, modulo, inv)
   if a >= modulo:
     subNoBorrow(a, modulo)
 
-proc add*(a: var BNU256, b: BNU256, modulo: BNU256) {.inline.} =
+func mul2*(a: var BNU256, modulo: static BNU256) =
+  ## Compute `a * 2 mod modulo`
+  mul2(a)
+  if a >= modulo:
+    subNoBorrow(a, modulo)
+
+func add*(a: var BNU256, b: BNU256, modulo: static BNU256) =
   ## Add integer ``b`` from integer ``a`` (mod ``modulo``).
   addNoCarry(a, b)
   if a >= modulo:
     subNoBorrow(a, modulo)
 
-proc sub*(a: var BNU256, b: BNU256, modulo: BNU256) {.inline.} =
+func sub*(a: var BNU256, b: BNU256, modulo: static BNU256) =
   ## Subtract integer ``b`` from integer ``a`` (mod ``modulo``).
   if a < b:
     addNoCarry(a, modulo)
   subNoBorrow(a, b)
 
-proc neg*(a: var BNU256, modulo: BNU256) {.inline.} =
+func neg*(a: var BNU256, modulo: static BNU256) =
   ## Turn integer ``a`` into its additive inverse (mod ``modulo``).
   if a > BNU256.zero():
     var tmp = modulo
     subNoBorrow(tmp, a)
     a = tmp
 
-proc isEven*(a: BNU256): bool {.inline, noinit.} =
+func isEven*(a: BNU256): bool =
   ## Check if ``a`` is even.
   ((a[0] and 1'u64) == 0'u64)
 
-proc divrem*(a: BNU512, modulo: BNU256, reminder: var BNU256): Option[BNU256] =
+func divrem*(
+    a: BNU512, modulo: static BNU256, reminder: var BNU256
+): Option[BNU256] {.noinit.} =
   ## Divides integer ``a`` by ``modulo``, set ``remainder`` to reminder and, if
   ## possible, return quotient smaller than the modulus.
-  var q = BNU256.zero()
+  var q {.align: 32.} = BNU256.zero()
   reminder.setZero()
-  result = some[BNU256](q)
+  var ok = true
   for i in countdown(511, 0):
     mul2(reminder)
     let ret = reminder.setBit(0, a.getBit(i))
     doAssert ret
     if reminder >= modulo:
       subNoBorrow(reminder, modulo)
-      if result.isSome():
-        if not q.setBit(i, true):
-          result = none[BNU256]()
-        else:
-          result = some[BNU256](q)
+      if ok and not q.setBit(i, true):
+        ok = false
 
-  if result.isSome() and result.get() >= modulo:
-    result = none[BNU256]()
+  if not ok or q >= modulo:
+    none[BNU256]()
+  else:
+    some(q)
 
-proc into*(t: typedesc[BNU512], c1: BNU256,
-           c0: BNU256, modulo: BNU256): BNU512 =
+func into*(t: typedesc[BNU512], c1: BNU256, c0: BNU256, modulo: BNU256): BNU512 =
   ## Return 512bit integer of value ``c1 * modulo + c0``.
-  macDigit(result, 0, modulo, c1[0])
-  macDigit(result, 1, modulo, c1[1])
-  macDigit(result, 2, modulo, c1[2])
-  macDigit(result, 3, modulo, c1[3])
+
+  staticFor i, 0 ..< 4:
+    macDigit(result, i, modulo, c1[i])
+
   var carry: Carry
-  staticFor i, 0, len(result):
+  staticFor i, 0 ..< len(result):
     when len(c0) > i:
       addC(carry, result[i], result[i], c0[i], carry)
     else:
