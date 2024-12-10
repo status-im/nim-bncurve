@@ -306,7 +306,7 @@ func toBytesBE*(src: BNU256 | BNU512, dst: var openArray[byte]): bool =
 
   true
 
-func toBytesBE*(src: BNU256 | BNU512): array[sizeof(src), byte] {.noinit.} =
+func toBytesBE*(src: BNU256 | BNU512): array {.noinit.} =
   ## Convert 256bit integer ``src`` to big-endian bytes representation.
   ## Return ``true`` if ``dst`` was successfully set, ``false`` otherwise.
 
