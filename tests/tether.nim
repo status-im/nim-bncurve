@@ -5,7 +5,7 @@ import ../bncurve/groups
 import nimcrypto/utils
 
 type
-  ValidationError = object of Exception
+  ValidationError = object of CatchableError
 
 proc getPoint[T: G1|G2](t: typedesc[T], data: openArray[byte]): Point[T] =
   when T is G1:
@@ -69,7 +69,7 @@ proc bn256ecPairing*(data: openArray[byte]): array[32, byte] =
 
   if msglen == 0:
     # we can discard here because we supply buffer of proper size
-    discard BNU256.one().toBytes(result)
+    discard BNU256.one().toBytesBE(result)
   else:
     # Calculate number of pairing pairs
     let count = msglen div 192
@@ -87,7 +87,7 @@ proc bn256ecPairing*(data: openArray[byte]): array[32, byte] =
 
     if acc == FQ12.one():
       # we can discard here because we supply buffer of proper size
-      discard BNU256.one().toBytes(result)
+      discard BNU256.one().toBytesBE(result)
 
 const
   addInputs = [

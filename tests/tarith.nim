@@ -16,8 +16,8 @@ suite "Modular arithmetic test suite":
       c0 = BNU256.random(modulo)
       var c0s = c0.toString()
       check:
-        c0.toBytes(c0b) == true
-        c1.fromBytes(c0b) == true
+        c0.toBytesBE(c0b) == true
+        c1.fromBytesBE(c0b) == true
         c2.fromHexString(c0s) == true
         c0 == c1
         c0 == c2
@@ -30,8 +30,8 @@ suite "Modular arithmetic test suite":
       var e1 = BNU256.random(modulo)
       var bb12 = BNU512.into(e1, e0, modulo)
       check:
-        bb12.toBytes(cbs) == true
-        cb.fromBytes(cbs) == true
+        bb12.toBytesBE(cbs) == true
+        cb.fromBytesBE(cbs) == true
       var c0: BNU256
       var c1opt = cb.divrem(modulo, c0)
       check:

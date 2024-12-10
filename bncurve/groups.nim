@@ -10,8 +10,6 @@ import fields, arith, options
 export fields, arith, options
 import nimcrypto/utils
 
-{.deadCodeElim: on.}
-
 type
   G1* = object
   G2* = object
