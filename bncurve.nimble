@@ -9,15 +9,12 @@ skipDirs      = @["tests", "Nim", "nim"]
 
 requires "nim >= 1.6.0",
          "nimcrypto",
-         "stint"
+         "stint",
+         "unittest2"
+
+task bench, "Run benchmark":
+  exec "nim c -f -r -d:release --styleCheck:error --styleCheck:usages --threads:on benchmarks/bench"
+
 
 task test, "Run all tests":
-  for tprog in @[
-      "tests/tarith",
-      "tests/tfields",
-      "tests/tgroups",
-      "tests/tpairing",
-      "tests/tether",
-      "tests/tvectors",
-    ]:
-    exec "nim c -f -r -d:release --styleCheck:error --styleCheck:usages --threads:on " & tprog
+  exec "nim c -f -r -d:release --styleCheck:error --styleCheck:usages --threads:on tests/all_tests"
