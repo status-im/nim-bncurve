@@ -139,7 +139,7 @@ func macDigit[N, N2: static int](
       muladd2(carry, acc[i], 0, c, acc[i], carry)
 
 func mulReduce(a: var BNU256, by: BNU256, modulo: static BNU256, inv: static uint64) =
-  var res {.align: 32.}: array[4 * 2, uint64]
+  var res {.align: 32.}: array[8, uint64]
   staticFor i, 0 ..< 4:
     macDigit(res, i, by, a[i])
 
@@ -323,9 +323,15 @@ func toBytes*(
 ): bool {.deprecated: "toBytesBE".} =
   toBytesBE(src, dst)
 
-func toString*(src: BNU256 | BNU512, lowercase = true): string =
+func toString*(src: BNU256, lowercase = true): string =
   ## Convert 256bit integer ``src`` to big-endian hexadecimal representation.
-  var a: array[4 * sizeof(uint64), byte]
+  var a: array[32, byte]
+  discard src.toBytesBE(a)
+  a.toHex(lowercase)
+
+func toString*(src: BNU512, lowercase = true): string =
+  ## Convert 256bit integer ``src`` to big-endian hexadecimal representation.
+  var a: array[64, byte]
   discard src.toBytesBE(a)
   a.toHex(lowercase)
 
