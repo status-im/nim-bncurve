@@ -110,30 +110,40 @@ func subNoBorrow(a: var BNU256, b: BNU256) =
   staticFor i, 0 ..< 4:
     subB(borrow, a[i], a[i], b[i], borrow)
 
-func macDigit[N, N2: static int](
-    acc: var array[N, uint64], pos: static int, b: array[N2, uint64], c: uint64
-) =
+func macDigit(acc: var array[8, uint64], pos: static int, b: BNU256, c: uint64) =
   if c == 0'u64:
     return
 
   var carry = 0'u64
 
-  staticFor i, pos ..< N:
+  staticFor i, pos ..< acc.len:
     when (i - pos) < len(b):
       muladd2(carry, acc[i], b[i - pos], c, acc[i], carry)
     else:
       muladd2(carry, acc[i], 0, c, acc[i], carry)
 
-proc mulReduce(a: var BNU256, by: BNU256, modulus: BNU256, inv: uint64) =
-  var res: array[4 * 2, uint64]
-  staticFor i, 0, 4:
+func macDigit(acc: var array[8, uint64], pos: static int, b: static BNU256, c: uint64) =
+  if c == 0'u64:
+    return
+
+  var carry = 0'u64
+
+  staticFor i, pos ..< acc.len:
+    when (i - pos) < len(b):
+      muladd2(carry, acc[i], b[i - pos], c, acc[i], carry)
+    else:
+      muladd2(carry, acc[i], 0, c, acc[i], carry)
+
+func mulReduce(a: var BNU256, by: BNU256, modulo: static BNU256, inv: static uint64) =
+  var res {.align: 32.}: array[8, uint64]
+  staticFor i, 0 ..< 4:
     macDigit(res, i, by, a[i])
 
-  staticFor i, 0, 4:
+  staticFor i, 0 ..< 4:
     let k = inv * res[i]
-    macDigit(res, i, modulus, k)
+    macDigit(res, i, modulo, k)
 
-  staticFor i, 0, 4:
+  staticFor i, 0 ..< 4:
     a[i] = res[i + 4]
 
 func compare*(a: BNU256, b: BNU256): int =
