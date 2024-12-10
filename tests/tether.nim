@@ -1,4 +1,6 @@
-import unittest
+{.used.}
+
+import unittest2
 import ../bncurve/groups
 import nimcrypto/utils
 
@@ -202,17 +204,16 @@ const
     "0000000000000000000000000000000000000000000000000000000000000001"
   ]
 
-when isMainModule:
-  suite "Ethereum calculations test suite:":
-    test "Addition test vectors":
-      for i in 0..<len(addInputs):
-        let chk = bn256ecAdd(fromHex(addInputs[i]))
-        check toHex(chk, true) == addExpects[i]
-    test "Multiplication test vectors":
-      for i in 0..<len(mulInputs):
-        let chk = bn256ecMul(fromHex(mulInputs[i]))
-        check toHex(chk, true) == mulExpects[i]
-    test "Pairing test vectors":
-      for i in 0..<len(pairingInputs):
-        let chk = bn256ecPairing(fromHex(pairingInputs[i]))
-        check toHex(chk, true) == pairingExpects[i]
+suite "Ethereum calculations test suite:":
+  test "Addition test vectors":
+    for i in 0..<len(addInputs):
+      let chk = bn256ecAdd(fromHex(addInputs[i]))
+      check toHex(chk, true) == addExpects[i]
+  test "Multiplication test vectors":
+    for i in 0..<len(mulInputs):
+      let chk = bn256ecMul(fromHex(mulInputs[i]))
+      check toHex(chk, true) == mulExpects[i]
+  test "Pairing test vectors":
+    for i in 0..<len(pairingInputs):
+      let chk = bn256ecPairing(fromHex(pairingInputs[i]))
+      check toHex(chk, true) == pairingExpects[i]

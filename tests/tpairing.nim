@@ -1,4 +1,6 @@
-import unittest
+{.used.}
+
+import unittest2
 import ../bncurve/groups
 
 proc testPreparedG2(): bool =
@@ -262,25 +264,24 @@ proc testAffineFail2(): bool =
   if not ap.init(FQ.one(), G1.coeff()):
     result = true
 
-when isMainModule:
-  suite "Pairing test suite":
-    test "Prepared G2 test":
-      check testPreparedG2() == true
-    test "Miller loop test":
-      check testMillerLoop() == true
-    test "Reduced pairing test":
-      check testReducedPairing() == true
-    test "Binlinearity test":
-      check testBinlinearity() == true
-    test "Diffie-Hellman test":
-      check testDH() == true
-    test "Joux test":
-      check testJoux() == true
-    test "[Paritytech] Predefined pair test":
-      check testPredefinedPair() == true
-    test "[Paritytech] Internals test":
-      check testInternals() == true
-    test "[Paritytech] Affine FAIL#1 test":
-      check testAffineFail1() == true
-    test "[Paritytech] Affine FAIL#2 test":
-      check testAffineFail2() == true
+suite "Pairing test suite":
+  test "Prepared G2 test":
+    check testPreparedG2() == true
+  test "Miller loop test":
+    check testMillerLoop() == true
+  test "Reduced pairing test":
+    check testReducedPairing() == true
+  test "Binlinearity test":
+    check testBinlinearity() == true
+  test "Diffie-Hellman test":
+    check testDH() == true
+  test "Joux test":
+    check testJoux() == true
+  test "[Paritytech] Predefined pair test":
+    check testPredefinedPair() == true
+  test "[Paritytech] Internals test":
+    check testInternals() == true
+  test "[Paritytech] Affine FAIL#1 test":
+    check testAffineFail1() == true
+  test "[Paritytech] Affine FAIL#2 test":
+    check testAffineFail2() == true

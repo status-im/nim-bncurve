@@ -1,4 +1,6 @@
-import unittest
+{.used.}
+
+import unittest2
 import nimcrypto/utils
 import ../bncurve/fields
 
@@ -407,156 +409,155 @@ proc fqSerializeTestVectors(): bool =
       return false
   return true
 
-when isMainModule:
 
-  suite "Field elements test suite":
-    test "[FR] rsquared() test":
-      for i in 0..<1000:
-        var a = FR.random()
-        var b = BNU256.into(a)
-        var c = FR.init(b)
-        check a == c.get()
+suite "Field elements test suite":
+  test "[FR] rsquared() test":
+    for i in 0..<1000:
+      var a = FR.random()
+      var b = BNU256.into(a)
+      var c = FR.init(b)
+      check a == c.get()
 
-    test "[FR] String conversion test":
-      var a = FR.fromString("21888242871839275222246405745257275088548364400416034343698204186575808495616")
-      check a == -FR.one()
+  test "[FR] String conversion test":
+    var a = FR.fromString("21888242871839275222246405745257275088548364400416034343698204186575808495616")
+    check a == -FR.one()
 
-    test "[FR] Random multiplication test":
-      check randomElementMultiplication[FR]() == true
+  test "[FR] Random multiplication test":
+    check randomElementMultiplication[FR]() == true
 
-    test "[FR] Random addition/substraction/negation test":
-      check randomElementASN[FR]() == true
+  test "[FR] Random addition/substraction/negation test":
+    check randomElementASN[FR]() == true
 
-    test "[FR] Inversion test":
-      check canInvert[FR]() == true
+  test "[FR] Inversion test":
+    check canInvert[FR]() == true
 
-    test "[FR] Zero test":
-      check zeroTest[FR]() == true
+  test "[FR] Zero test":
+    check zeroTest[FR]() == true
 
-    test "[FR] Random element squaring test":
-      check randomSquaring[FR]() == true
+  test "[FR] Random element squaring test":
+    check randomSquaring[FR]() == true
 
-    test "[FR] Random element inversion test":
-      check randomElementInverse[FR]() == true
+  test "[FR] Random element inversion test":
+    check randomElementInverse[FR]() == true
 
-    test "[FR] Random element evaluation test":
-      check randomElementEval[FR]() == true
+  test "[FR] Random element evaluation test":
+    check randomElementEval[FR]() == true
 
-    test "[FR] Serialize/Deserialize tests":
-      check fpSerializeTests[FR]() == true
+  test "[FR] Serialize/Deserialize tests":
+    check fpSerializeTests[FR]() == true
 
-    test "[FR] Serialize test vectors":
-      check frSerializeTestVectors() == true
+  test "[FR] Serialize test vectors":
+    check frSerializeTestVectors() == true
 
-    test "[FQ] rsquared() tests":
-      for i in 0..1000:
-        var a = FQ.random()
-        var b = BNU256.into(a)
-        var c = FQ.init(b)
-        check a == c.get()
+  test "[FQ] rsquared() tests":
+    for i in 0..1000:
+      var a = FQ.random()
+      var b = BNU256.into(a)
+      var c = FQ.init(b)
+      check a == c.get()
 
-    test "[FQ] String conversion test":
-      var b = FQ.fromString("21888242871839275222246405745257275088696311157297823662689037894645226208582")
-      check b == -FQ.one()
+  test "[FQ] String conversion test":
+    var b = FQ.fromString("21888242871839275222246405745257275088696311157297823662689037894645226208582")
+    check b == -FQ.one()
 
-    test "[FQ] Random multiplication test":
-      check randomElementMultiplication[FQ]() == true
+  test "[FQ] Random multiplication test":
+    check randomElementMultiplication[FQ]() == true
 
-    test "[FQ] Random addition/substraction/negation test":
-      check randomElementASN[FQ]() == true
+  test "[FQ] Random addition/substraction/negation test":
+    check randomElementASN[FQ]() == true
 
-    test "[FQ] Inversion test":
-      check canInvert[FQ]() == true
+  test "[FQ] Inversion test":
+    check canInvert[FQ]() == true
 
-    test "[FQ] Zero test":
-      check zeroTest[FQ]() == true
+  test "[FQ] Zero test":
+    check zeroTest[FQ]() == true
 
-    test "[FQ] Random element squaring test":
-      check randomSquaring[FQ]() == true
+  test "[FQ] Random element squaring test":
+    check randomSquaring[FQ]() == true
 
-    test "[FQ] Random element inversion test":
-      check randomElementInverse[FQ]() == true
+  test "[FQ] Random element inversion test":
+    check randomElementInverse[FQ]() == true
 
-    test "[FQ] Random element evaluation test":
-      check randomElementEval[FQ]() == true
+  test "[FQ] Random element evaluation test":
+    check randomElementEval[FQ]() == true
 
-    test "[FQ] Serialize/Deserialize tests":
-      check fpSerializeTests[FQ]() == true
+  test "[FQ] Serialize/Deserialize tests":
+    check fpSerializeTests[FQ]() == true
 
-    test "[FQ] Serialize test vectors":
-      check fqSerializeTestVectors() == true
+  test "[FQ] Serialize test vectors":
+    check fqSerializeTestVectors() == true
 
-    test "[FQ2] Random multiplication test":
-      check randomElementMultiplication[FQ2]() == true
+  test "[FQ2] Random multiplication test":
+    check randomElementMultiplication[FQ2]() == true
 
-    test "[FQ2] Random addition/substraction/negation test":
-      check randomElementASN[FQ2]() == true
+  test "[FQ2] Random addition/substraction/negation test":
+    check randomElementASN[FQ2]() == true
 
-    test "[FQ2] Inversion test":
-      check canInvert[FQ2]() == true
+  test "[FQ2] Inversion test":
+    check canInvert[FQ2]() == true
 
-    test "[FQ2] Zero test":
-      check zeroTest[FQ2]() == true
+  test "[FQ2] Zero test":
+    check zeroTest[FQ2]() == true
 
-    test "[FQ2] Random element squaring test":
-      check randomSquaring[FQ2]() == true
+  test "[FQ2] Random element squaring test":
+    check randomSquaring[FQ2]() == true
 
-    test "[FQ2] Random element inversion test":
-      check randomElementInverse[FQ2]() == true
+  test "[FQ2] Random element inversion test":
+    check randomElementInverse[FQ2]() == true
 
-    test "[FQ2] Random element evaluation test":
-      check randomElementEval[FQ2]() == true
+  test "[FQ2] Random element evaluation test":
+    check randomElementEval[FQ2]() == true
 
-    test "[FQ2] Serialize/Deserialize tests":
-      check fpSerializeTests[FQ2]() == true
+  test "[FQ2] Serialize/Deserialize tests":
+    check fpSerializeTests[FQ2]() == true
 
-    test "[FQ2] Serialize test vectors":
-      check fq2SerializeTestVectors() == true
+  test "[FQ2] Serialize test vectors":
+    check fq2SerializeTestVectors() == true
 
-    test "[FQ6] Random multiplication test":
-      check randomElementMultiplication[FQ6]() == true
+  test "[FQ6] Random multiplication test":
+    check randomElementMultiplication[FQ6]() == true
 
-    test "[FQ6] Random addition/substraction/negation test":
-      check randomElementASN[FQ6]() == true
+  test "[FQ6] Random addition/substraction/negation test":
+    check randomElementASN[FQ6]() == true
 
-    test "[FQ6] Inversion test":
-      check canInvert[FQ6]() == true
+  test "[FQ6] Inversion test":
+    check canInvert[FQ6]() == true
 
-    test "[FQ6] Zero test":
-      check zeroTest[FQ6]() == true
+  test "[FQ6] Zero test":
+    check zeroTest[FQ6]() == true
 
-    test "[FQ6] Random element squaring test":
-      check randomSquaring[FQ6]() == true
+  test "[FQ6] Random element squaring test":
+    check randomSquaring[FQ6]() == true
 
-    test "[FQ6] Random element inversion test":
-      check randomElementInverse[FQ6]() == true
+  test "[FQ6] Random element inversion test":
+    check randomElementInverse[FQ6]() == true
 
-    test "[FQ6] Random element evaluation test":
-      check randomElementEval[FQ6]() == true
+  test "[FQ6] Random element evaluation test":
+    check randomElementEval[FQ6]() == true
 
-    test "[FQ12] Random multiplication test":
-      check randomElementMultiplication[FQ12]() == true
+  test "[FQ12] Random multiplication test":
+    check randomElementMultiplication[FQ12]() == true
 
-    test "[FQ12] Random addition/substraction/negation test":
-      check randomElementASN[FQ12]() == true
+  test "[FQ12] Random addition/substraction/negation test":
+    check randomElementASN[FQ12]() == true
 
-    test "[FQ12] Inversion test":
-      check canInvert[FQ12]() == true
+  test "[FQ12] Inversion test":
+    check canInvert[FQ12]() == true
 
-    test "[FQ12] Zero test":
-      check zeroTest[FQ12]() == true
+  test "[FQ12] Zero test":
+    check zeroTest[FQ12]() == true
 
-    test "[FQ12] Random element squaring test":
-      check randomSquaring[FQ12]() == true
+  test "[FQ12] Random element squaring test":
+    check randomSquaring[FQ12]() == true
 
-    test "[FQ12] Random element inversion test":
-      check randomElementInverse[FQ12]() == true
+  test "[FQ12] Random element inversion test":
+    check randomElementInverse[FQ12]() == true
 
-    test "[FQ12] Random element evaluation test":
-      check randomElementEval[FQ12]() == true
+  test "[FQ12] Random element evaluation test":
+    check randomElementEval[FQ12]() == true
 
-    test "[FQ12] Cyclotomic exponent test":
-      check testCyclotomicExp() == true
+  test "[FQ12] Cyclotomic exponent test":
+    check testCyclotomicExp() == true
 
-    test "[FQ12] Test vector test":
-      check fq12TestVector() == true
+  test "[FQ12] Test vector test":
+    check fq12TestVector() == true

@@ -1,4 +1,6 @@
-import unittest
+{.used.}
+
+import unittest2
 import ../bncurve/groups
 
 proc randomAdd*(G: typedesc): bool =
@@ -102,37 +104,36 @@ proc affineJacobianConversion(G: typedesc): bool =
       return false
   return true
 
-when isMainModule:
-  suite "Group elements test suite:":
-    test "[G1] Zero/One test":
-      check G1.zeroTest() == true
-    test "[G1] Random addition test":
-      check G1.randomAdd() == true
-    test "[G1] Random doubling test":
-      check G1.randomMul() == true
-    test "[G1] Random Diffie-Hellman test":
-      check G1.randomDH() == true
-    test "[G1] Random equality test":
-      check G1.randomEquality() == true
-    test "[G1] Random Affine to Jacobian conversion test":
-      check G1.affineJacobianConversion() == true
-    test "[G1] Y at point at Infinity test":
-      check:
-        (G1.zero()).y == FQ.one()
-        (-G1.zero()).y == FQ.one()
-    test "[G2] Zero/One test":
-      check G2.zeroTest() == true
-    test "[G2] Random addition test":
-      check G1.randomAdd() == true
-    test "[G2] Random doubling test":
-      check G2.randomMul() == true
-    test "[G2] Random Diffie-Hellman test":
-      check G2.randomDH() == true
-    test "[G2] Random equality test":
-      check G2.randomEquality() == true
-    test "[G2] Random Affine to Jacobian conversion test":
-      check G2.affineJacobianConversion() == true
-    test "[G2] Y at point at Infinity test":
-      check:
-        (G2.zero()).y == FQ2.one()
-        (-G2.zero()).y == FQ2.one()
+suite "Group elements test suite:":
+  test "[G1] Zero/One test":
+    check G1.zeroTest() == true
+  test "[G1] Random addition test":
+    check G1.randomAdd() == true
+  test "[G1] Random doubling test":
+    check G1.randomMul() == true
+  test "[G1] Random Diffie-Hellman test":
+    check G1.randomDH() == true
+  test "[G1] Random equality test":
+    check G1.randomEquality() == true
+  test "[G1] Random Affine to Jacobian conversion test":
+    check G1.affineJacobianConversion() == true
+  test "[G1] Y at point at Infinity test":
+    check:
+      (G1.zero()).y == FQ.one()
+      (-G1.zero()).y == FQ.one()
+  test "[G2] Zero/One test":
+    check G2.zeroTest() == true
+  test "[G2] Random addition test":
+    check G1.randomAdd() == true
+  test "[G2] Random doubling test":
+    check G2.randomMul() == true
+  test "[G2] Random Diffie-Hellman test":
+    check G2.randomDH() == true
+  test "[G2] Random equality test":
+    check G2.randomEquality() == true
+  test "[G2] Random Affine to Jacobian conversion test":
+    check G2.affineJacobianConversion() == true
+  test "[G2] Y at point at Infinity test":
+    check:
+      (G2.zero()).y == FQ2.one()
+      (-G2.zero()).y == FQ2.one()
