@@ -110,16 +110,17 @@ func subNoBorrow(a: var BNU256, b: BNU256) =
   staticFor i, 0 ..< 4:
     subB(borrow, a[i], a[i], b[i], borrow)
 
-proc macDigit[N, N2: static int](
-    acc: var array[N, uint64], pos: static int, b: array[N2, uint64], c: uint64) =
+func macDigit[N, N2: static int](
+    acc: var array[N, uint64], pos: static int, b: array[N2, uint64], c: uint64
+) =
   if c == 0'u64:
     return
 
   var carry = 0'u64
 
-  staticFor i, pos, N:
+  staticFor i, pos ..< N:
     when (i - pos) < len(b):
-      muladd2(carry, acc[i], b[i-pos], c, acc[i], carry)
+      muladd2(carry, acc[i], b[i - pos], c, acc[i], carry)
     else:
       muladd2(carry, acc[i], 0, c, acc[i], carry)
 
@@ -135,27 +136,43 @@ proc mulReduce(a: var BNU256, by: BNU256, modulus: BNU256, inv: uint64) =
   staticFor i, 0, 4:
     a[i] = res[i + 4]
 
-proc compare*(a: BNU256, b: BNU256): int {.noinit, inline.}=
+func compare*(a: BNU256, b: BNU256): int =
   ## Compare integers ``a`` and ``b``.
   ## Returns ``-1`` if ``a < b``, ``1`` if ``a > b``, ``0`` if ``a == b``.
-  for i in countdown(3, 0):
+  staticFor j, 0 ..< 4:
+    const i = 3 - j
     if a[i] < b[i]:
       return -1
     elif a[i] > b[i]:
       return 1
   return 0
 
-proc `<`*(a: BNU256, b: BNU256): bool {.noinit, inline.} =
+func `<`*(a: BNU256, b: BNU256): bool =
   ## Return true if `a < b`.
-  result = (compare(a, b) == -1)
+  staticFor j, 0 ..< 4:
+    const i = 3 - j
+    if a[i] < b[i]:
+      return true
+    elif a[i] > b[i]:
+      return false
+  return false
 
-proc `<=`*(a: BNU256, b: BNU256): bool {.noinit, inline.} =
+func `<=`*(a: BNU256, b: BNU256): bool =
   ## Return true if `a <= b`.
-  result = (compare(a, b) <= 0)
+  staticFor j, 0 ..< 4:
+    const i = 3 - j
+    if a[i] < b[i]:
+      return true
+    elif a[i] > b[i]:
+      return false
+  return true
 
-proc `==`*(a: BNU256, b: BNU256): bool {.noinit, inline.} =
+func `==`*(a, b: BNU256): bool =
   ## Return true if `a == b`.
-  result = (compare(a, b) == 0)
+  var res = 0'u64
+  staticFor i, 0 ..< 4:
+    res = res or (a[i] xor b[i])
+  res == 0
 
 func mul*(a: var BNU256, b: BNU256, modulo: static BNU256, inv: static uint64) =
   ## Multiply integer ``a`` by ``b`` (mod ``modulo``) via the Montgomery
