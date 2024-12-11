@@ -128,7 +128,7 @@ proc fromBytes*(dst: var FQ2, src: openArray[byte]): bool {.noinit.} =
   ## otherwise.
   result = false
   var value: BNU512
-  if fromBytes(value, src):
+  if fromBytesBE(value, src):
     var b0: BNU256
     var b1o = value.divrem(FQ.modulus(), b0)
     if isSome(b1o):
@@ -156,4 +156,4 @@ proc toBytes*(src: FQ2,
   var c0, c1: BNU256
   c0 = BNU256.into(src.c0)
   c1 = BNU256.into(src.c1)
-  result = BNU512.into(c1, c0, FQ.modulus()).toBytes(dst)
+  result = BNU512.into(c1, c0, FQ.modulus()).toBytesBE(dst)

@@ -102,8 +102,7 @@ template fieldImplementation(finame, fimodulus, firsquared, fircubed,
     if num >= BNU256(fimodulus):
       result = none[finame]()
     else:
-      var res: finame
-      res = finame(num)
+      var res = finame(num)
       mul(BNU256(res), BNU256(firsquared), BNU256(fimodulus), fiinv)
       result = some[finame](res)
 
@@ -118,7 +117,7 @@ template fieldImplementation(finame, fimodulus, firsquared, fircubed,
     ## otherwise.
     result = false
     var bn: BNU256
-    if bn.fromBytes(src):
+    if bn.fromBytesBE(src):
       var optr = finame.init(bn)
       if isSome(optr):
         dst = optr.get()
@@ -131,7 +130,7 @@ template fieldImplementation(finame, fimodulus, firsquared, fircubed,
     ## otherwise.
     result = false
     var bn: BNU256
-    if bn.fromBytes(src):
+    if bn.fromBytesBE(src):
       dst = finame.init2(bn)
       result = true
 
@@ -140,7 +139,7 @@ template fieldImplementation(finame, fimodulus, firsquared, fircubed,
     ## Encode integer FP/FQ to big-endian bytes representation ``dst``.
     ## Returns ``true`` if integer was successfully serialized, ``false``
     ## otherwise.
-    result = BNU256.into(src).toBytes(dst)
+    result = BNU256.into(src).toBytesBE(dst)
 
   proc fromHexString*(dst: var finame,
                       src: string): bool {.noinit, inline.} =
