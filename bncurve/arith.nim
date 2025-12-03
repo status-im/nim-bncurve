@@ -9,7 +9,7 @@
 
 {.push raises: [], gcsafe, inline.}
 
-import std/options, stew/[staticfor, endians2], nimcrypto/[utils, sysrand]
+import std/options, stew/[staticfor, endians2], nimcrypto/[utils]
 
 export options
 
@@ -33,14 +33,14 @@ type
   BNU256* = array[4, uint64]
   BNU512* = array[8, uint64]
 
-proc setRandom*(a: var BNU512) =
-  ## Set value of integer ``a`` to random value.
-  let ret = randomBytes(a)
-  doAssert(ret == 8)
+# proc setRandom*(a: var BNU512) =
+#   ## Set value of integer ``a`` to random value.
+#   let ret = randomBytes(a)
+#   doAssert(ret == 8)
 
-proc random*(t: typedesc[BNU512]): BNU512 {.noinit.} =
-  ## Return random 512bit integer.
-  setRandom(result)
+# proc random*(t: typedesc[BNU512]): BNU512 {.noinit.} =
+#   ## Return random 512bit integer.
+#   setRandom(result)
 
 func setZero*(a: var BNU256) =
   ## Set value of integer ``a`` to zero.
