@@ -335,14 +335,14 @@ func `$`*(src: BNU256 | BNU512): string =
   ## Return hexadecimal string representation of integer ``src``.
   toString(src, false)
 
-proc setRandom*(a: var BNU256, modulo: static BNU256) =
-  ## Set value of integer ``a`` to random value (mod ``modulo``).
-  var r = BNU512.random()
-  discard divrem(r, modulo, a)
+#proc setRandom*(a: var BNU256, modulo: static BNU256) =
+#  ## Set value of integer ``a`` to random value (mod ``modulo``).
+#  var r = BNU512.random()
+#  discard divrem(r, modulo, a)
 
-proc random*(t: typedesc[BNU256], modulo: static BNU256): BNU256 {.noinit.} =
-  ## Return random 256bit integer (mod ``modulo``).
-  result.setRandom(modulo)
+#proc random*(t: typedesc[BNU256], modulo: static BNU256): BNU256 {.noinit.} =
+#  ## Return random 256bit integer (mod ``modulo``).
+#  result.setRandom(modulo)
 
 func invert*(a: var BNU256, modulo: static BNU256) =
   ## Turn integer ``a`` into its multiplicative inverse (mod ``modulo``).
