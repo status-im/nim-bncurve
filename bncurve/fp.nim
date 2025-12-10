@@ -36,14 +36,17 @@ template fieldImplementation(finame, fimodulus, firsquared, fircubed,
     ## Return ``Fp`` modulus.
     result = fimodulus
 
-  proc setRandom*(dst: var finame) {.noinit, inline.} =
-    ## Set ``dst`` to random value
-    var a = BNU256.random(fimodulus)
-    dst = finame(a)
+  # random numbers are not supported on bare metal
+  when not defined(`any`) and not defined(standalone):
 
-  proc random*(t: typedesc[finame]): finame {.noinit, inline.} =
-    ## Return random ``Fp``.
-    result.setRandom()
+    proc setRandom*(dst: var finame) {.noinit, inline.} =
+      ## Set ``dst`` to random value
+      var a = BNU256.random(fimodulus)
+      dst = finame(a)
+
+    proc random*(t: typedesc[finame]): finame {.noinit, inline.} =
+      ## Return random ``Fp``.
+      result.setRandom()
 
   proc `+`*(x, y: finame): finame {.noinit, inline.} =
     ## Return result of ``x + y``.
