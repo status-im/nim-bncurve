@@ -9,7 +9,11 @@
 
 {.push raises: [], gcsafe, inline.}
 
-import std/options, stew/[staticfor, endians2], nimcrypto/[utils]
+import std/options, stew/[staticfor, endians2], nimcrypto/utils
+
+# random numbers are not supported on bare metal
+when not defined(`any`) and not defined(standalone):
+  import nimcrypto/sysrand
 
 export options
 
@@ -33,14 +37,17 @@ type
   BNU256* = array[4, uint64]
   BNU512* = array[8, uint64]
 
-# proc setRandom*(a: var BNU512) =
-#   ## Set value of integer ``a`` to random value.
-#   let ret = randomBytes(a)
-#   doAssert(ret == 8)
+# random numbers are not supported on bare metal
+when not defined(`any`) and not defined(standalone):
 
-# proc random*(t: typedesc[BNU512]): BNU512 {.noinit.} =
-#   ## Return random 512bit integer.
-#   setRandom(result)
+  proc setRandom*(a: var BNU512) =
+    ## Set value of integer ``a`` to random value.
+    let ret = randomBytes(a)
+    doAssert(ret == 8)
+
+  proc random*(t: typedesc[BNU512]): BNU512 {.noinit.} =
+    ## Return random 512bit integer.
+    setRandom(result)
 
 func setZero*(a: var BNU256) =
   ## Set value of integer ``a`` to zero.
@@ -335,14 +342,17 @@ func `$`*(src: BNU256 | BNU512): string =
   ## Return hexadecimal string representation of integer ``src``.
   toString(src, false)
 
-#proc setRandom*(a: var BNU256, modulo: static BNU256) =
-#  ## Set value of integer ``a`` to random value (mod ``modulo``).
-#  var r = BNU512.random()
-#  discard divrem(r, modulo, a)
+# random numbers are not supported on bare metal
+when not defined(`any`) and not defined(standalone):
 
-#proc random*(t: typedesc[BNU256], modulo: static BNU256): BNU256 {.noinit.} =
-#  ## Return random 256bit integer (mod ``modulo``).
-#  result.setRandom(modulo)
+  proc setRandom*(a: var BNU256, modulo: static BNU256) =
+    ## Set value of integer ``a`` to random value (mod ``modulo``).
+    var r = BNU512.random()
+    discard divrem(r, modulo, a)
+
+  proc random*(t: typedesc[BNU256], modulo: static BNU256): BNU256 {.noinit.} =
+    ## Return random 256bit integer (mod ``modulo``).
+    result.setRandom(modulo)
 
 func invert*(a: var BNU256, modulo: static BNU256) =
   ## Turn integer ``a`` into its multiplicative inverse (mod ``modulo``).
