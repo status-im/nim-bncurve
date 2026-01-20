@@ -9,13 +9,12 @@ skipDirs      = @["tests", "Nim", "nim"]
 
 requires "nim >= 1.6.0",
          "nimcrypto",
-         "stint >= 0.8.0",
          "stew >= 0.2.0",
+         "intops >= 1.0.6",
          "unittest2 >= 0.2.3"
 
 task bench, "Run benchmark":
   exec "nim c -f -r -d:release --styleCheck:error --styleCheck:usages --threads:on benchmarks/bench"
-
 
 task test, "Run all tests":
   exec "nim c -f -r -d:release --styleCheck:error --styleCheck:usages --threads:on tests/all_tests"
