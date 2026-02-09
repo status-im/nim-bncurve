@@ -9,29 +9,13 @@
 
 {.push raises: [], gcsafe, inline.}
 
-import std/options, stew/[staticfor, endians2], nimcrypto/utils
+import std/options, stew/[staticfor, endians2], nimcrypto/utils, intops/ops/[add, sub, muladd]
 
 # random numbers are not supported on bare metal
 when not defined(`any`) and not defined(standalone):
   import nimcrypto/sysrand
 
 export options
-
-# TODO replace private stint operations with an integer primitive library
-import stint/private/datatypes
-
-when sizeof(int) == 4:
-  import stint/private/primitives/compiletime_fallback
-
-  # TODO a future intops library should expose this on 32-bit platforms too!
-  func addC*(cOut: var Carry, sum: var uint64, a, b: uint64, cIn: Carry) =
-    addC_nim(cOut, sum, a, b, cIn)
-  func subB*(bOut: var Borrow, diff: var uint64, a, b: uint64, bIn: Borrow) =
-    subB_nim(bOut, diff, a, b, bIn)
-  func muladd2(hi, lo: var uint64, a, b, c1, c2: uint64) =
-    muladd2_nim(hi, lo, a, b, c1, c2)
-else:
-  import stint/private/primitives/[addcarry_subborrow, extended_precision]
 
 type
   BNU256* = array[4, uint64]
@@ -101,21 +85,21 @@ func div2(a: var BNU256) =
 
 func mul2(a: var BNU256) =
   ## Multiply integer ``a`` in place by ``2``.
-  var carry: Carry
+  var carry: bool
   staticFor i, 0 ..< 4:
-    addC(carry, a[i], a[i], a[i], carry)
+    (a[i], carry) = carryingAdd(a[i], a[i], carry)
 
 func addNoCarry(a: var BNU256, b: BNU256) =
   ## Calculate integer addition ``a = a + b``.
-  var carry: Carry
+  var carry: bool
   staticFor i, 0 ..< 4:
-    addC(carry, a[i], a[i], b[i], carry)
+    (a[i], carry) = carryingAdd(a[i], b[i], carry)
 
 func subNoBorrow(a: var BNU256, b: BNU256) =
   ## Calculate integer substraction ``a = a - b``.
-  var borrow: Borrow
+  var borrow: bool
   staticFor i, 0 ..< 4:
-    subB(borrow, a[i], a[i], b[i], borrow)
+    (a[i], borrow) = borrowingSub(a[i], b[i], borrow)
 
 func macDigit(acc: var array[8, uint64], pos: static int, b: BNU256, c: uint64) =
   if c == 0'u64:
@@ -125,9 +109,9 @@ func macDigit(acc: var array[8, uint64], pos: static int, b: BNU256, c: uint64) 
 
   staticFor i, pos ..< acc.len:
     when (i - pos) < len(b):
-      muladd2(carry, acc[i], b[i - pos], c, acc[i], carry)
+      (carry, acc[i]) = wideningMulAdd(b[i - pos], c, acc[i], carry)
     else:
-      muladd2(carry, acc[i], 0, c, acc[i], carry)
+      (carry, acc[i]) = wideningMulAdd(0'u64, c, acc[i], carry)
 
 func macDigit(acc: var array[8, uint64], pos: static int, b: static BNU256, c: uint64) =
   if c == 0'u64:
@@ -137,9 +121,9 @@ func macDigit(acc: var array[8, uint64], pos: static int, b: static BNU256, c: u
 
   staticFor i, pos ..< acc.len:
     when (i - pos) < len(b):
-      muladd2(carry, acc[i], b[i - pos], c, acc[i], carry)
+      (carry, acc[i]) = wideningMulAdd(b[i - pos], c, acc[i], carry)
     else:
-      muladd2(carry, acc[i], 0, c, acc[i], carry)
+      (carry, acc[i]) = wideningMulAdd(0'u64, c, acc[i], carry)
 
 func mulReduce(a: var BNU256, by: BNU256, modulo: static BNU256, inv: static uint64) =
   var res {.align: 32.}: array[8, uint64]
@@ -255,14 +239,14 @@ func into*(t: typedesc[BNU512], c1: BNU256, c0: BNU256, modulo: BNU256): BNU512 
   staticFor i, 0 ..< 4:
     macDigit(result, i, modulo, c1[i])
 
-  var carry: Carry
+  var carry: bool
   staticFor i, 0 ..< len(result):
     when len(c0) > i:
-      addC(carry, result[i], result[i], c0[i], carry)
+      (result[i], carry) = carryingAdd(result[i], c0[i], carry)
     else:
-      addC(carry, result[i], result[i], 0'u64, carry)
+      (result[i], carry) = carryingAdd(result[i], 0'u64, carry)
 
-  doAssert(carry == 0)
+  doAssert(not carry)
 
 func fromBytesBE*(dst: var (BNU256 | BNU512), src: openArray[byte]): bool =
   ## Create 256bit integer from big-endian bytes representation ``src``.
